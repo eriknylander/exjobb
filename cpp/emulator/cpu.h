@@ -3,6 +3,15 @@
 
 #include<vector>
 
+#define EAX 0;
+#define ECX 1;
+#define EDX 2;
+#define EBX 3;
+#define ESP 4;
+#define EBP 5;
+#define ESI 6;
+#define EDI 7;
+
 class CPU {
 public:
 	typedef unsigned int32_t Register_32;
@@ -23,35 +32,35 @@ public:
 	int32_t fetchDoubleWordFromRegistry(int registry);
 
 	bool storeByteInRegistry(int8_t value, int registry);
-	bool storeDoubleWordInRegistry(int_32 value, int registry);Registry
+	bool storeDoubleWordInRegistry(int_32 value, int registry);
 
 private:
 
 	//Instruction pointer
-	Register_32 EIP;
+	Register_32 eip;
 
 	//Stack pointer
-	Register_32 ESP;
+	Register_32 esp;
 
 	//Base pointer
-	Register_32 EBP;
+	Register_32 ebp;
 
 	//General registers
-	Register_32 EAX;
-	Register_32 EBX;
-	Register_32 ECX;
-	Register_32 EDX:
+	Register_32 eax;
+	Register_32 ecx;
+	Register_32 edx;
+	Register_32 ebx:
 
 	//Index registers
-	Register_32 ESI;
-	Register_32 EDI;
+	Register_32 esi;
+	Register_32 edi;
 
 	//ELAGS
 	Register_64 EFLAGS;
 
 	//Memory
-	BYTE programMemory[];
-	BYTE memory[];
+	vector<BYTE> programMemory;
+	vector<BYTE> memory;
 
 };
 
