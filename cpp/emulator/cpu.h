@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include <vector>
+#include "instruction.h"
 
 #define EAX 0;
 #define ECX 1;
@@ -19,7 +20,7 @@ public:
 	typedef unsigned int8_t BYTE;
 
 	CPU();
-	void performInstruction();
+	bool performInstruction();
 	bool loadProgram(std::vector<BYTE> program);
 
 	int8_t fetchByteFromMemory(int address);
@@ -34,32 +35,35 @@ public:
 	bool storeByteInRegistry(int8_t value, int registry);
 	bool storeDoubleWordInRegistry(int_32 value, int registry);
 
+	void printRegistryState();
+	void printMemoryState();
+
 private:
 
 	//Instruction pointer
-	Register_32 eip;
+	Register_32 eip = 0;
 
 	//Stack pointer
-	Register_32 esp;
+	Register_32 esp = 0;
 
 	//Base pointer
-	Register_32 ebp;
+	Register_32 ebp = 0;
 
 	//General registers
-	Register_32 eax;
-	Register_32 ecx;
-	Register_32 edx;
-	Register_32 ebx:
+	Register_32 eax = 0;
+	Register_32 ecx = 0;
+	Register_32 edx = 0;
+	Register_32 ebx = 0;
 
 	//Index registers
-	Register_32 esi;
-	Register_32 edi;
+	Register_32 esi = 0;
+	Register_32 edi = 0;
 
 	//ELAGS
-	Register_64 EFLAGS;
+	Register_64 EFLAGS = 0;
 
 	//Memory
-	vector<BYTE> programMemory;
+	vector<Instruction> programMemory;
 	vector<BYTE> memory;
 
 };
