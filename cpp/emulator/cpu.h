@@ -1,7 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include<vector>
+#include <vector>
 
 #define EAX 0;
 #define ECX 1;
