@@ -65,7 +65,7 @@ void removeSpaces(char* source, char* destination)
 
 
 
-int main(int argc, char* argv[])
+/*int main(int argc, char* argv[])
 {
     if(argc < 2) {
         return 1;
@@ -85,8 +85,10 @@ int main(int argc, char* argv[])
 
         generateAssembler(inputToDisassemble, inputLen);
         i++;    
-    }
+    
 
     
     return 0;
+
 }   
+*/

