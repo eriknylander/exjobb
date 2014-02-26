@@ -3,6 +3,8 @@
 #include <udis86.h>
 #include <iterator>
 #include <stdio.h>
+#include <string.h>
+
 
 using namespace std;
 
@@ -14,7 +16,7 @@ Parser::Parser()
    ud_set_mode(&ud_obj, 32);
 }
 
-vector<Instruction> Parser::parseBytes(char fileName[]) 
+vector<Instruction> Parser::parseFile(char fileName[]) 
 {
 
   FILE *file = fopen(fileName, "r");
@@ -49,3 +51,21 @@ vector<Instruction> Parser::parseBytes(char fileName[])
 	return program;
 }
 
+int Parser::parseUntilInvalid(BYTE input[], int len) {
+  ud_set_input_buffer(&ud_obj, input, len);
+
+  int index = 0;
+  while (ud_disassemble(&ud_obj)) {
+    int bytesRead = ud_insn_len(&ud_obj);
+
+    if(strcmp(ud_insn_asm(&ud_obj), "invalid") == 0)
+      break;
+
+    printf("%s\t%s\n", ud_insn_hex(&ud_obj), ud_insn_asm(&ud_obj));
+
+    index += bytesRead;
+  }
+
+  return index;
+
+}

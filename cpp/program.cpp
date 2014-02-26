@@ -4,6 +4,7 @@
 #include <iterator>
 #include "instruction.h"
 #include "parser.h"
+#include "emulator.h"
 
 
 typedef unsigned char BYTE;
@@ -16,9 +17,6 @@ vector<BYTE> getBytes(vector<Instruction> program)
 	for(vector<Instruction>::iterator itr = program.begin(); itr != program.end(); ++itr) {
 		itr->getBytes(&returnVector);
 	}
-
-	cout << "return size is " << returnVector.size() << endl;
-
 	return returnVector;
 }
 
@@ -32,9 +30,22 @@ int main(int argc, char* argv[]) {
 
 	Parser p;
 
-	vector<Instruction> program = p.parseBytes(argv[1]);
+	Emulator e;
 
-	vector<BYTE> pureBytes = getBytes(program);	
+	vector<Instruction> program = p.parseFile(argv[1]);
+
+	vector<BYTE> pureBytes = getBytes(program);
+
+
+	int validBytes = p.parseUntilInvalid(pureBytes.data(), pureBytes.size());
+
+	cout << "EFLAGS: " << e.runAndGetEFlags(pureBytes.data(), pureBytes.size()) << endl;	
+
+	pureBytes.insert(pureBytes.begin(), 0x03);
+
+	validBytes = p.parseUntilInvalid(pureBytes.data(), pureBytes.size());
+
+	cout << "EFLAGS: " << e.runAndGetEFlags(pureBytes.data(), pureBytes.size()) << endl; 
 	
 		
 
