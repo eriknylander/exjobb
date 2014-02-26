@@ -14,12 +14,15 @@ Parser::Parser()
    ud_set_mode(&ud_obj, 32);
 }
 
-vector<Instruction> Parser::parseBytes(BYTE bytes[], int len) 
+vector<Instruction> Parser::parseBytes(char fileName[]) 
 {
+
+  FILE *file = fopen(fileName, "r");
+
   vector<Instruction> program;
 
    
-  ud_set_input_buffer(&ud_obj, bytes, len);
+  ud_set_input_file(&ud_obj, file);
     
   int index = 0;
   while (ud_disassemble(&ud_obj)) {
