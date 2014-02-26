@@ -25,5 +25,12 @@ void Instruction::printBytes()
 }
 
 
+void Instruction::getBytes(std::vector<unsigned char> *acc) 
+{
+	for(int i = 0; i < bytes.size(); i++) {
+		acc->push_back(bytes.at(i));
+	}
+}
+
 
   

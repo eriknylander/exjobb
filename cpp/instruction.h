@@ -10,6 +10,7 @@ public:
 	typedef unsigned char BYTE;
 	Instruction(std::vector<BYTE> bytes, int startIndex, int endIndex);
 	void printBytes();
+	void getBytes(std::vector<unsigned char> *acc);
 
 
 private:
