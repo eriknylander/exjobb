@@ -8,8 +8,8 @@ CC      = g++
 
 # Preprocessor, compiler and linker options
 #CPPFLAGS  = -DNDEBUG
-CXXFLAGS  = -pipe -O2 -Wall -W -ansi -pedantic-errors
-CXXFLAGS += -Wmissing-braces -Wparentheses -Wold-style-cast	
+#CXXFLAGS  = -pipe -O2 -Wall -W -ansi -pedantic-errors
+#CXXFLAGS += -Wmissing-braces -Wparentheses -Wold-style-cast	
 #CXXFLAGS += -ggdb
 #LDFLAGS = -ggdb
 
@@ -22,11 +22,15 @@ PROGS	= program
 
 all: $(PROGS)
 
-program: program.o parser.o instruction.o
-	$(CXX) $(CXXFLAGS) program.o parser.o instruction.o -ludis86 -o program.out
+program: program.o parser.o instruction.o emulator.o /home/erik/libemu/libemu/src/.libs/libemu.a
+	$(CXX) $(CXXFLAGS) program.o parser.o instruction.o emulator.o /home/erik/libemu/libemu/src/.libs/libemu.a -ludis86 -o program.out
 
 parser: parser.o instruction.o
 	$(CXX) $(CXXFLAGS) parser.o instruction.o -ludis86
+
+
+
+
 
 
 
@@ -34,9 +38,9 @@ clean:
 	rm -f *.o
 
 cleaner: clean
-	rm -f $(PROGS) *.d
+	rm -f $(PROGS) *.out
 
-%.d: %.cc
+%.d: %.cpp
 	@set -e; rm -f $@; \
 	$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \

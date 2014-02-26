@@ -1,3 +1,4 @@
+BITS 32
 section	.data
 hello	db	"Hello world", 0x0a
 hellolen	equ	$-hello

@@ -19,7 +19,7 @@ void generateAssembler(char* bytes, int len)
     ud_set_mode(&ud_obj, 32);
 
     while (ud_disassemble(&ud_obj)) {
-        printf("\t%s\t%s\n", ud_insn_asm(&ud_obj), ud_insn_hex(&ud_obj));
+        printf("%s\n", ud_insn_asm(&ud_obj));
     }
 }
 
@@ -65,7 +65,7 @@ void removeSpaces(char* source, char* destination)
 
 
 
-/*int main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     if(argc < 2) {
         return 1;
@@ -84,11 +84,12 @@ void removeSpaces(char* source, char* destination)
         getInputToDisassemble(fixedInputFromArg, inputToDisassemble, inputLen);
 
         generateAssembler(inputToDisassemble, inputLen);
-        i++;    
+        i++;  
+
+    }  
     
 
     
     return 0;
 
 }   
-*/

@@ -1,3 +1,4 @@
+BITS 32
 section .data
 	
 	shellpathhandle db 0
