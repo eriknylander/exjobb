@@ -1,4 +1,5 @@
 #include "emulator.h"
+#include <iostream>
 
 Emulator::Emulator() 
 {
@@ -25,8 +26,10 @@ void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instruc
 std::vector<struct emu_instruction> Emulator::getInstructionVector()
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
+	std::cout << "Setting EIP to: " << static_offset << std::endl;
 	std::vector<struct emu_instruction> v;
-	while(emu_cpu_parse(emu_cpu_get(e))) {
+	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
+		//std::cout << "Instruction parsed was: " <<  emu_cpu_get(e)->instr_string << std::endl;
 		v.push_back(emu_cpu_get(e)->instr);
 	}
 	
@@ -37,6 +40,7 @@ std::vector<struct emu_instruction> Emulator::getInstructionVector()
 int Emulator::runAndGetEFlags() 
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
+	std::cout << "Setting EIP to: " << static_offset << std::endl;
 	emu_cpu_run(emu_cpu_get(e));
 	return emu_cpu_eflags_get(emu_cpu_get(e));
 }

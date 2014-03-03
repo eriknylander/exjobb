@@ -1,4 +1,5 @@
 BITS 32
 
-mov al, -125
-sub al, 0xA
+mov [ecx+0xfaec], edx
+mov ecx, edx
+mov ebp, esp
