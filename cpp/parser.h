@@ -9,7 +9,7 @@ class Parser {
 public:
 	typedef unsigned char BYTE;
 	Parser();
-	std::vector<Instruction> parseFile(char fileName[]);
+	std::vector<BYTE> parseFile(char fileName[]);
 	int parseUntilInvalid(BYTE input[], int len);
 
 private:

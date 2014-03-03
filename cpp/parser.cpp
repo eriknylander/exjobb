@@ -16,37 +16,19 @@ Parser::Parser()
    ud_set_mode(&ud_obj, 32);
 }
 
-vector<Instruction> Parser::parseFile(char fileName[]) 
+vector<unsigned char> Parser::parseFile(char fileName[]) 
 {
 
   FILE *file = fopen(fileName, "r");
 
-  vector<Instruction> program;
+  vector<BYTE> program;
 
-   
   ud_set_input_file(&ud_obj, file);
     
-  int index = 0;
   while (ud_disassemble(&ud_obj)) {
-
-    vector<BYTE> instructionBytes;
-    int bytesRead = ud_insn_len(&ud_obj);
-
-    const uint8_t* bytes = ud_insn_ptr(&ud_obj);
-
-    for(int i = 0; i < bytesRead; i++) {
-    	instructionBytes.push_back((*(bytes+i)));
-    }
-
-
-
-    Instruction ins(instructionBytes, index, index+bytesRead);
-
-    program.push_back(ins);
-    index += index + bytesRead;
+    const uint8_t *bytes = ud_insn_ptr(&ud_obj);
+    program.insert(program.end(), bytes, bytes+ud_insn_len(&ud_obj));
   }
-
-
 
 	return program;
 }

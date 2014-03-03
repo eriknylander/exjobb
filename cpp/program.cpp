@@ -11,6 +11,7 @@ typedef unsigned char BYTE;
 
 using namespace std;
 
+/*
 vector<BYTE> getBytes(vector<Instruction> program) 
 {
 	vector<BYTE> returnVector;
@@ -19,7 +20,7 @@ vector<BYTE> getBytes(vector<Instruction> program)
 	}
 	return returnVector;
 }
-
+*/
 int main(int argc, char* argv[]) {
 
 	if(argc < 2) {
@@ -31,22 +32,29 @@ int main(int argc, char* argv[]) {
 	Parser p;
 
 	Emulator e;
+										
+	vector<BYTE> program = p.parseFile(argv[1]);
 
-	vector<Instruction> program = p.parseFile(argv[1]);
-
-	vector<BYTE> pureBytes = getBytes(program);
+	//vector<BYTE> program = getBytes(program);
 
 
-	int validBytes = p.parseUntilInvalid(pureBytes.data(), pureBytes.size());
+	int validBytes = p.parseUntilInvalid(program.data(), program.size());
 
-	cout << "EFLAGS: " << e.runAndGetEFlags(pureBytes.data(), pureBytes.size()) << endl;	
+	e.loadProgramInMemory(program.data(), program.size());
+	vector<struct emu_instruction> instructions = e.getInstructionVector();
 
-	pureBytes.insert(pureBytes.begin(), 0x03);
+	cout << "EFLAGS: " << e.runAndGetEFlags() << endl;
+	e.printDebug();	
 
-	validBytes = p.parseUntilInvalid(pureBytes.data(), pureBytes.size());
-
-	cout << "EFLAGS: " << e.runAndGetEFlags(pureBytes.data(), pureBytes.size()) << endl; 
 	
+	program.insert(program.begin(), 0x4);
+
+	e.loadProgramInMemory(program.data(), program.size());
+
+	cout << "EFLAGS: " << e.runAndGetEFlags() << endl;
+	e.printDebug();
+
+	e.getInstructionVector();
 		
 
 

@@ -9,7 +9,8 @@ CC      = g++
 # Preprocessor, compiler and linker options
 #CPPFLAGS  = -DNDEBUG
 #CXXFLAGS  = -pipe -O2 -Wall -W -ansi -pedantic-errors
-#CXXFLAGS += -Wmissing-braces -Wparentheses -Wold-style-cast	
+#CXXFLAGS += -Wmissing-braces -Wparentheses -Wold-style-cast
+CXXFLAGS = -I/home/erik/libemu/libemu/include	
 #CXXFLAGS += -ggdb
 #LDFLAGS = -ggdb
 
@@ -27,12 +28,6 @@ program: program.o parser.o instruction.o emulator.o /home/erik/libemu/libemu/sr
 
 parser: parser.o instruction.o
 	$(CXX) $(CXXFLAGS) parser.o instruction.o -ludis86
-
-
-
-
-
-
 
 clean:
 	rm -f *.o

@@ -1,10 +1,11 @@
 #include "emulator.h"
 
-
 Emulator::Emulator() 
 {
 	e = emu_new();
 	mem = emu_memory_get(e);
+	emu_log_level_set(emu_logging_get(e), EMU_LOG_DEBUG);
+	static_offset = 4711;
 }
 
 Emulator::~Emulator() 
@@ -12,22 +13,35 @@ Emulator::~Emulator()
 	emu_free(e);
 }
 
-
-int Emulator::runAndGetEFlags(unsigned char instructionBytes[], int instructionBytesLen) 
+void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen)
 {
-
-	int static_offset = 4711;
-
-	int i;
-	for(i = 0; i < instructionBytesLen; i++)
+	for(int i = 0; i < instructionBytesLen; i++)
 	{
 		emu_memory_write_byte(mem, static_offset+i, instructionBytes[i]);
 	}
-	emu_memory_write_byte(mem, static_offset+i, '\xcc');
+}
 
+
+std::vector<struct emu_instruction> Emulator::getInstructionVector()
+{
+	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
+	std::vector<struct emu_instruction> v;
+	while(emu_cpu_parse(emu_cpu_get(e))) {
+		v.push_back(emu_cpu_get(e)->instr);
+	}
+	
+	return v;
+}
+
+
+int Emulator::runAndGetEFlags() 
+{
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
 	emu_cpu_run(emu_cpu_get(e));
-
 	return emu_cpu_eflags_get(emu_cpu_get(e));
+}
 
+void Emulator::printDebug()
+{
+	emu_cpu_debug_print(emu_cpu_get(e));
 }
