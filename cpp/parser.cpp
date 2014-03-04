@@ -43,7 +43,7 @@ int Parser::parseUntilInvalid(BYTE input[], int len) {
     if(strcmp(ud_insn_asm(&ud_obj), "invalid") == 0)
       break;
 
-    printf("%s\t%s\n", ud_insn_hex(&ud_obj), ud_insn_asm(&ud_obj));
+    //printf("%s\t%s\n", ud_insn_hex(&ud_obj), ud_insn_asm(&ud_obj));
 
     index += bytesRead;
   }

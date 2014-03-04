@@ -16,17 +16,19 @@ Emulator::~Emulator()
 
 void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen)
 {
-	for(int i = 0; i < instructionBytesLen; i++)
+	int i;
+	for(i = 0; i < instructionBytesLen; i++)
 	{
 		emu_memory_write_byte(mem, static_offset+i, instructionBytes[i]);
 	}
+	emu_memory_write_byte(mem, static_offset+i, 0xcc);
 }
 
 
 std::vector<struct emu_instruction> Emulator::getInstructionVector()
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
-	std::cout << "Setting EIP to: " << static_offset << std::endl;
+	//std::cout << "Setting EIP to: " << static_offset << std::endl;
 	std::vector<struct emu_instruction> v;
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 		//std::cout << "Instruction parsed was: " <<  emu_cpu_get(e)->instr_string << std::endl;
@@ -40,7 +42,7 @@ std::vector<struct emu_instruction> Emulator::getInstructionVector()
 int Emulator::runAndGetEFlags() 
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
-	std::cout << "Setting EIP to: " << static_offset << std::endl;
+	//std::cout << "Setting EIP to: " << static_offset << std::endl;
 	emu_cpu_run(emu_cpu_get(e));
 	return emu_cpu_eflags_get(emu_cpu_get(e));
 }
