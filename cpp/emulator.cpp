@@ -31,8 +31,14 @@ std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVe
 	//std::cout << "Setting EIP to: " << static_offset << std::endl;
 	std::vector<std::pair<struct emu_instruction, bool> > v;
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
-		//std::cout << "Instruction parsed was: " <<  emu_cpu_get(e)->instr_string << std::endl;
-		v.push_back(std::make_pair(emu_cpu_get(e)->instr, false));
+
+		/*if(emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0) {
+			std::cout << "Does not have modrm" << std::endl;
+		} else {
+			std::cout << "Has modrm" << std::endl;
+		}*/
+
+		v.push_back(std::make_pair(emu_cpu_get(e)->instr, emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0));
 	}
 	
 	return v;
