@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <utility>
 #include <fstream>
 #include <vector>
 #include <iterator>
@@ -24,6 +25,15 @@ bool InstructionCompare(const struct emu_cpu_instruction &a, const struct emu_cp
 			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp);  
 }
 
+void printProgram(vector<BYTE> program) 
+{
+	for(vector<BYTE>::iterator itr = program.begin(); itr != program.end(); ++itr) {
+		cout << hex << setfill('0') << setw(2) << (int)*itr << " ";
+	}
+
+	cout << endl;
+}
+
 int main(int argc, char* argv[]) {
 
 	if(argc < 2) {
@@ -44,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 
 	e.loadProgramInMemory(program.data(), program.size());
-	vector<struct emu_instruction> hep = e.getInstructionVector();
+	vector<pair<struct emu_instruction, bool> > hep = e.getInstructionVector();
 
 	cout << "Got " << hep.size() << " instructions." << endl;
 
@@ -53,40 +63,42 @@ int main(int argc, char* argv[]) {
 		printf("Opcode = %02x , Mod = %02x , Reg = %02x , Rm = %02x\n", itr->opc, itr->cpu.modrm.mod, itr->cpu.modrm.opc, itr->cpu.modrm.rm);	
 	} */
 
+	for(vector<BYTE>::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+		
+		program.insert(program.begin(), *startingBytesIterator);
 
-	int validBytes = p.parseUntilInvalid(program.data(), program.size());
-
-	
-	for(vector<BYTE>::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
-		program.insert(program.begin(), *itr);
-
-		BYTE opcode = *itr;
+		BYTE opcode = *startingBytesIterator;
 
 		int validBytes = p.parseUntilInvalid(program.data(), program.size());
 
 		e.loadProgramInMemory(program.data(), validBytes);
-		vector<struct emu_instruction> mep = e.getInstructionVector();
-		if(mep.size() > hep.size()){
-			printf("Inserting %02x\n", opcode);
-			cout << "MEP is bigger than HEP" << endl;
 
-			bool illegalMod = false;
-			for(vector<emu_instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-				if(itr->cpu.modrm.mod != 3) {
-					illegalMod = true;
-					break;
-				}
+		vector<pair<struct emu_instruction, bool> > mep = e.getInstructionVector();
+
+		if(mep.size() <= hep.size()) {
+			program.erase(program.begin());
+			continue;
+		}
+
+		printf("Inserting %02x\n", opcode);
+		cout << "MEP is bigger than HEP" << endl;
+
+		printProgram(program);	
+
+		for(vector<pair<struct emu_instruction, bool> >::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+			if(itr->first.cpu.modrm.mod == 3) {
+				itr->second = true;
+				cout << "Valid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
+			} else {
+				cout << "Invalid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
 			}
 
-			if(illegalMod)
-				cout << "MEP contains illegal mod bits\n" << endl;
-		}
+		}	
 		
-
 		program.erase(program.begin());
 	}
-		
 
+	
 	return 0;
 	
 	

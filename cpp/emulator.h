@@ -2,6 +2,7 @@
 #define EMULATOR_H 
 
 #include <vector>
+#include <utility>
 
 extern "C" {
 #include "emu/emu.h"
@@ -20,7 +21,7 @@ public:
 	~Emulator();
 
 	void loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen);
-	std::vector<struct emu_instruction> getInstructionVector();
+	std::vector<std::pair<struct emu_instruction, bool> > getInstructionVector();
 	int runAndGetEFlags();
 	void printDebug();
 
