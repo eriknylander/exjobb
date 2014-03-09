@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <utility>
+#include "instruction.h"
 
 extern "C" {
 #include "emu/emu.h"
@@ -21,7 +22,7 @@ public:
 	~Emulator();
 
 	void loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen);
-	std::vector<std::pair<struct emu_instruction, bool> > getInstructionVector();
+	std::vector<Instruction> getInstructionVector();
 	int runAndGetEFlags();
 	void printDebug();
 

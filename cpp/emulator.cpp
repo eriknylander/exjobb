@@ -25,11 +25,12 @@ void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instruc
 }
 
 
-std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVector()
+std::vector<Instruction> Emulator::getInstructionVector()
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
 	//std::cout << "Setting EIP to: " << static_offset << std::endl;
-	std::vector<std::pair<struct emu_instruction, bool> > v;
+	std::vector<Instruction> v;
+	int startIndex = 0;
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 
 		struct emu_instruction ins = emu_cpu_get(e)->instr;
@@ -38,7 +39,9 @@ std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVe
 		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0)
 			legalInstruction = true; 
 
-		v.push_back(std::make_pair(emu_cpu_get(e)->instr, legalInstruction));
+		v.push_back(Instruction(ins, legalInstruction, startIndex, emu_cpu_eip_get(emu_cpu_get(e)) - static_offset));
+
+		startIndex+=emu_cpu_eip_get(emu_cpu_get(e));
 	}
 	
 	return v;

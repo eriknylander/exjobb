@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 
 	e.loadProgramInMemory(program.data(), program.size());
-	vector<pair<struct emu_instruction, bool> > hep = e.getInstructionVector();
+	vector<Instruction> hep = e.getInstructionVector();
 
 	cout << "Got " << hep.size() << " instructions." << endl;
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
 		e.loadProgramInMemory(program.data(), validBytes);
 
-		vector<pair<struct emu_instruction, bool> > mep = e.getInstructionVector();
+		vector<Instruction> mep = e.getInstructionVector();
 
 		if(mep.size() <= hep.size()) {
 			program.erase(program.begin());
@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
 
 		printProgram(program);	
 
-		for(vector<pair<struct emu_instruction, bool> >::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			if(itr->second)
+		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+			if(itr->isLegal())
 				cout << "Legal instruction" << endl;
 			else
 				cout << "Illegal instruction" << endl;
