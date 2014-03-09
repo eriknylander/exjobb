@@ -24,6 +24,17 @@ void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instruc
 	emu_memory_write_byte(mem, static_offset+i, 0xcc);
 }
 
+void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen, unsigned char startingByte)
+{
+	emu_memory_write_byte(mem, static_offset, startingByte);
+	int i;
+	for(i = 1; i < instructionBytesLen; i++)
+	{
+		emu_memory_write_byte(mem, static_offset+i, instructionBytes[i]);
+	}
+	emu_memory_write_byte(mem, static_offset+i, 0xcc);
+}
+
 
 std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVector()
 {
@@ -31,14 +42,16 @@ std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVe
 	//std::cout << "Setting EIP to: " << static_offset << std::endl;
 	std::vector<std::pair<struct emu_instruction, bool> > v;
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
+		struct emu_instruction ins = emu_cpu_get(e)->instr;
+		bool validInstruction = false;
 
-		/*if(emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0) {
-			std::cout << "Does not have modrm" << std::endl;
-		} else {
-			std::cout << "Has modrm" << std::endl;
-		}*/
+		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0) {
+			validInstruction = true;
+			//std::cout << "Instruction valid: Instruction has valid mod bits or no modrm" << std::endl;
+		}
 
-		v.push_back(std::make_pair(emu_cpu_get(e)->instr, emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0));
+
+		v.push_back(std::make_pair(ins, validInstruction));
 	}
 	
 	return v;

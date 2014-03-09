@@ -21,6 +21,7 @@ public:
 	~Emulator();
 
 	void loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen);
+	void loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen, unsigned char startingByte);
 	std::vector<std::pair<struct emu_instruction, bool> > getInstructionVector();
 	int runAndGetEFlags();
 	void printDebug();

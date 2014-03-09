@@ -25,8 +25,9 @@ bool InstructionCompare(const struct emu_cpu_instruction &a, const struct emu_cp
 			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp);  
 }
 
-void printProgram(vector<BYTE> program) 
+void printProgram(vector<BYTE> program, BYTE startingByte) 
 {
+	program.insert(program.begin(), startingByte);
 	for(vector<BYTE>::iterator itr = program.begin(); itr != program.end(); ++itr) {
 		cout << hex << setfill('0') << setw(2) << (int)*itr << " ";
 	}
@@ -59,47 +60,36 @@ int main(int argc, char* argv[]) {
 	cout << "Got " << hep.size() << " instructions." << endl;
 
 	
-	/*for(vector<struct emu_instruction>::iterator itr = hep.begin(); itr != hep.end(); ++itr) {
-		printf("Opcode = %02x , Mod = %02x , Reg = %02x , Rm = %02x\n", itr->opc, itr->cpu.modrm.mod, itr->cpu.modrm.opc, itr->cpu.modrm.rm);	
-	} */
-
 	for(vector<BYTE>::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		
-		program.insert(program.begin(), *startingBytesIterator);
 
 		BYTE opcode = *startingBytesIterator;
 
-		int validBytes = p.parseUntilInvalid(program.data(), program.size());
+		printf("%02x\n", opcode);
 
-		e.loadProgramInMemory(program.data(), validBytes);
+		int validBytes = p.parseUntilInvalid(program, program.size(), opcode);
+		
+
+		e.loadProgramInMemory(program.data(), validBytes, *startingBytesIterator);
+
+		
 
 		vector<pair<struct emu_instruction, bool> > mep = e.getInstructionVector();
 
 		if(mep.size() <= hep.size()) {
-			program.erase(program.begin());
 			continue;
 		}
 
+		printProgram(program, opcode);
 		printf("Inserting %02x\n", opcode);
-		cout << "MEP is bigger than HEP" << endl;
-
-		printProgram(program);	
+		cout << "MEP is bigger than HEP" << endl;	
 
 		for(vector<pair<struct emu_instruction, bool> >::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			if(itr->first.cpu.modrm.mod == 3 && !itr->second) {
-				itr->second = true;
-				cout << "Has modrm but is valid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
-			} else if(itr->second) {
-				cout << "Does not have modrm and is valid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
-			} else {
-				cout << "Invalid instruction" << endl;
-			}
+			if(itr->second) 
+				cout << "Valid" << endl;
+			else
+				cout << "Invalid" << endl;
+		}
 
-
-
-		}	
-		
-		program.erase(program.begin());
 	}
 
 	
