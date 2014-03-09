@@ -32,13 +32,13 @@ std::vector<std::pair<struct emu_instruction, bool> > Emulator::getInstructionVe
 	std::vector<std::pair<struct emu_instruction, bool> > v;
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 
-		/*if(emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0) {
-			std::cout << "Does not have modrm" << std::endl;
-		} else {
-			std::cout << "Has modrm" << std::endl;
-		}*/
+		struct emu_instruction ins = emu_cpu_get(e)->instr;
+		bool legalInstruction = false;
 
-		v.push_back(std::make_pair(emu_cpu_get(e)->instr, emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0));
+		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0)
+			legalInstruction = true; 
+
+		v.push_back(std::make_pair(emu_cpu_get(e)->instr, legalInstruction));
 	}
 	
 	return v;

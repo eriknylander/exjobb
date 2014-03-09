@@ -86,16 +86,10 @@ int main(int argc, char* argv[]) {
 		printProgram(program);	
 
 		for(vector<pair<struct emu_instruction, bool> >::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			if(itr->first.cpu.modrm.mod == 3 && !itr->second) {
-				itr->second = true;
-				cout << "Has modrm but is valid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
-			} else if(itr->second) {
-				cout << "Does not have modrm and is valid instruction, mod = " << (int)itr->first.cpu.modrm.mod << endl;
-			} else {
-				cout << "Invalid instruction" << endl;
-			}
-
-
+			if(itr->second)
+				cout << "Legal instruction" << endl;
+			else
+				cout << "Illegal instruction" << endl;
 
 		}	
 		

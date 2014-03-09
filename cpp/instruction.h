@@ -1,24 +1,32 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
+
 #include <iostream>
 #include <vector>
+
+extern "C" {
+#include "emu/emu_cpu_data.h"
+#include "emu/emu_instruction.h"
+}
 
 class Instruction {
 
 
 public:
 	typedef unsigned char BYTE;
-	Instruction(std::vector<BYTE> bytes, int startIndex, int endIndex);
-	void printBytes();
-	void getBytes(std::vector<unsigned char> *acc);
+	Instruction(struct emu_instruction input, bool legalInstruction, int startIndex, int endIndex);
 
+	struct emu_instruction getInstruction();
+	bool isLegal();
+	int getStartIndex();
+	int getEndIndex();
 
 private:
-	std::vector<BYTE> bytes;
-	int startIndex;
-	int endIndex;
-	BYTE opcode;
-	BYTE modregrm;
+	struct emu_instruction m_ins;
+	bool m_legalInstruction;
+	int m_startIndex;
+	int m_endIndex;
+	
 };
 
 #endif

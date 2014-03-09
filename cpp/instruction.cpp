@@ -1,36 +1,34 @@
 #include "instruction.h"
-#include <iostream>
-#include <iomanip>
-#include <iterator>
 
 
 
-Instruction::Instruction(std::vector<BYTE> bytes, int startIndex, int endIndex) : bytes(bytes), startIndex(startIndex), endIndex(endIndex) 
+
+Instruction::Instruction(struct emu_instruction ins, bool legalInstruction, int startIndex, int endIndex) : m_ins(ins), m_legalInstruction(legalInstruction), m_startIndex(startIndex), m_endIndex(endIndex) {}
+
+struct emu_instruction Instruction::getInstruction() 
 {
-	opcode = bytes[0];
-	if(sizeof(bytes) > 1)
-		modregrm = bytes[1];
+	return m_ins;
 }
 
-void Instruction::printBytes() 
+bool Instruction::isLegal() 
 {
-	for(std::vector<BYTE>::iterator itr = bytes.begin(); itr != bytes.end(); ++itr) {
-		std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)*itr;
-	}
+	return m_legalInstruction;
+}
 
-	std::cout << std::endl;
+int Instruction::getStartIndex()
+{
+	return m_startIndex;
+}
 
-	//std::cout << "opcode: " << std::hex << std::setfill('0') << std::setw(2) << (int)opcode << std::endl;
-	//std::cout << "modregrm: " << std::hex << std::setfill('0') << std::setw(2) << (int)modregrm << std::endl;
+int Instruction::getEndIndex() 
+{
+	return m_endIndex;
 }
 
 
-void Instruction::getBytes(std::vector<unsigned char> *acc) 
-{
-	for(int i = 0; i < bytes.size(); i++) {
-		acc->push_back(bytes.at(i));
-	}
-}
+
+
+
 
 
   
