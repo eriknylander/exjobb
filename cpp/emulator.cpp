@@ -41,7 +41,7 @@ std::vector<Instruction> Emulator::getInstructionVector()
 
 		v.push_back(Instruction(ins, legalInstruction, startIndex, emu_cpu_eip_get(emu_cpu_get(e)) - static_offset));
 
-		startIndex+=emu_cpu_eip_get(emu_cpu_get(e));
+		startIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset + 1;
 	}
 	
 	return v;
