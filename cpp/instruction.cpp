@@ -3,7 +3,8 @@
 
 
 
-Instruction::Instruction(struct emu_instruction ins, bool legalInstruction, int startIndex, int endIndex) : m_ins(ins), m_legalInstruction(legalInstruction), m_startIndex(startIndex), m_endIndex(endIndex) {}
+Instruction::Instruction(struct emu_instruction ins, bool legalInstruction, int startIndex, int endIndex) : m_ins(ins), 
+								m_legalInstruction(legalInstruction), m_startIndex(startIndex), m_endIndex(endIndex){}
 
 struct emu_instruction Instruction::getInstruction() 
 {

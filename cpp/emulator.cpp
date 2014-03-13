@@ -39,9 +39,12 @@ std::vector<Instruction> Emulator::getInstructionVector()
 		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0)
 			legalInstruction = true; 
 
-		v.push_back(Instruction(ins, legalInstruction, startIndex, emu_cpu_eip_get(emu_cpu_get(e)) - static_offset));
+		int endIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset - 1;
+		v.push_back(Instruction(ins, legalInstruction, startIndex, endIndex));
 
-		startIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset + 1;
+		//printf("startIndex =  %d, endIndex = %d\n", startIndex, endIndex);
+
+		startIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset;
 	}
 	
 	return v;

@@ -17,6 +17,8 @@ public:
 	Instruction(struct emu_instruction input, bool legalInstruction, int startIndex, int endIndex);
 
 	struct emu_instruction getInstruction();
+
+	
 	bool isLegal();
 	int getStartIndex();
 	int getEndIndex();

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <iterator>
+#include <sstream>
 #include "instruction.h"
 #include "parser.h"
 #include "emulator.h"
@@ -11,12 +12,7 @@
 
 typedef unsigned char BYTE;
 
-using namespace std;
-
-/*BYTE opcodes[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05,0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
-						0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d,
-						0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 
-						0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0x81, 0x82, 0x83, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e};*/
+using namespace std;	
 
 int prefixMask = 0xFF0000;
 int firstOpcodeMask = 0x00FF00;
@@ -24,29 +20,51 @@ int secondOpcodeMask = 0x0000FF;
 
 struct Opcode 
 {
-	Opcode(int opcode) 
-	{
-		if(opcode > 0x00FFFF) {
-			bytes.push_back(opcode & secondOpcodeMask);
-			bytes.push_back((opcode & firstOpcodeMask) >> 2);
-			bytes.push_back((opcode & prefixMask) >> 4);
-		} else if(opcode > 0x0000FF) {
-			bytes.push_back(opcode & secondOpcodeMask);
-			bytes.push_back((opcode & firstOpcodeMask) >> 2);
-		} else {
-			bytes.push_back(opcode & secondOpcodeMask);
+	vector<BYTE> bytes;
+	string getOpcodeString() {
+		stringstream ss;
+		for(vector<BYTE>::reverse_iterator itr = bytes.rbegin(); itr != bytes.rend(); ++itr) {
+			ss << hex << setfill('0') << setw(2) << (int)*itr;
+			//ss << bytes.size() << " bytes : " << (int)*itr;
 		}
+
+		return ss.str();
 	}
 
-	vector<BYTE> bytes;
+	int getOpcodeSize() {
+		return bytes.size();
+	}
 };
 
 
-bool InstructionCompare(const struct emu_cpu_instruction &a, const struct emu_cpu_instruction &b)
+bool InstructionCompare(Instruction &insa, Instruction &insb)
 {
+	
+	struct emu_cpu_instruction a = insa.getInstruction().cpu;
+	struct emu_cpu_instruction b = insb.getInstruction().cpu;
+
+	
+	if((a.opc == b.opc) && (a.modrm.mod == b.modrm.mod) && (a.modrm.opc == b.modrm.opc) && (a.modrm.sib.base == b.modrm.sib.base)
+			&& (a.modrm.sib.index == b.modrm.sib.index) && (a.modrm.sib.scale == b.modrm.sib.scale) && (a.imm == b.imm) 
+			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp)) {
+	
+	} else {
+		printf("a.opc == b.opc : %d == %d\n", (int)a.opc, (int)b.opc);
+;		printf("a.modrm.mod == b.modrm.mod : %d == %d\n", (int)a.modrm.mod, (int)b.modrm.mod);
+		printf("a.modrm.opc == b.modrm.opc : %d == %d\n", (int)a.modrm.opc, (int)b.modrm.opc);
+		printf("a.modrm.sib.base == b.modrm.sib.base : %d == %d\n", (int)a.modrm.sib.base, (int)b.modrm.sib.base);;
+		printf("a.modrm.sib.index == b.modrm.sib.index : %d == %d\n", (int)a.modrm.sib.index,  (int)b.modrm.sib.index);
+		printf("a.modrm.sib.scale == a.modrm.sib.scale : %d == %d\n", (int)a.modrm.sib.scale, (int)b.modrm.sib.scale);
+		printf("a.imm == b.imm : %d == %d\n", (int)a.imm, (int)b.imm);
+		printf("a.imm8 == b.imm8 : %d == %d\n", (int)a.imm8, (int)b.imm8);
+		printf("a.imm16 == b.imm16 : %d == %d\n", (int)a.imm16, (int)b.imm16);
+		printf("a.disp == b.disp : %d == %d\n", (int)a.disp, (int)b.disp);
+	}
 	return (a.opc == b.opc) && (a.modrm.mod == b.modrm.mod) && (a.modrm.opc == b.modrm.opc) && (a.modrm.sib.base == b.modrm.sib.base)
-			&& (a.modrm.sib.index == b.modrm.sib.index) && (a.modrm.sib.scale == a.modrm.sib.scale) && (a.imm == b.imm) 
+			&& (a.modrm.sib.index == b.modrm.sib.index) && (a.modrm.sib.scale == b.modrm.sib.scale)  /*&& (a.imm == b.imm)*/ 
 			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp);  
+	
+
 }
 
 void printProgram(vector<BYTE> program) 
@@ -58,6 +76,22 @@ void printProgram(vector<BYTE> program)
 	cout << endl;
 }
 
+void printInstructions(vector<Instruction> instructions, vector<BYTE> program)
+{
+	stringstream ss;
+	for(vector<Instruction>::iterator itr = instructions.begin(); itr != instructions.end(); ++itr) {
+		int startIndex = itr->getStartIndex();
+		int endIndex = itr->getEndIndex();
+		ss << "[";
+		for(int i = startIndex; i <= endIndex; i++) {
+			ss << hex << setfill('0') << setw(2) <<  (int)program.at(i) << "";
+		}
+		ss << "]";
+	}
+
+	cout << ss.str() << endl;
+}
+
 
 int main(int argc, char* argv[]) {
 
@@ -66,77 +100,159 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	vector<pair<BYTE, int> > startingBytes;
+	
+	cout << "Building startingBytes" << endl;
+	vector<pair<Opcode, int> > startingBytes;
+	/*
+	Opcode *a;
+	int counter = 0;
+	for(int prefix = -1; prefix < 0; prefix++) {
 
-	for(BYTE i = 0; i < 255; i++) {
-		startingBytes.push_back(make_pair(i, -1));
+		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
+
+			for(int secondOpc = 0; secondOpc < 256; secondOpc++) {
+
+				a = new Opcode();
+				
+				if(firstOpc == -1 && prefix == -1) {
+					a->bytes.push_back(secondOpc);
+					startingBytes.push_back(make_pair(*a, -1));
+					
+					delete a;
+
+				} else if(firstOpc != -1 && prefix == -1) {
+					a->bytes.push_back(secondOpc);
+					a->bytes.push_back(firstOpc);
+					startingBytes.push_back(make_pair(*a, -1));
+					
+					delete a;
+
+				} else if(firstOpc != -1 && prefix != -1) {
+					a->bytes.push_back(secondOpc);
+					a->bytes.push_back(firstOpc);
+					a->bytes.push_back(prefix);
+					startingBytes.push_back(make_pair(*a, -1));
+		
+					delete a;
+				
+				}
+			}
+		}
 	}
 
-	startingBytes.push_back(make_pair(255, -1));
+	cout << "Finished building startingBytes" << endl;
+
+	//for(vector<pair<Opcode, int> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
+	//	cout << itr->first.getOpcodeString() << endl;
+	//}
 
 
+	cout << "startingBytes[65791] = " << startingBytes.at(65791).first.getOpcodeString() << endl;
+	cout << "Size of startingBytes is " << startingBytes.size() << endl;
+	*/
+
+	Opcode a;
+	a.bytes.push_back(05);
+	startingBytes.push_back(make_pair(a, -1));
+	
+	
 	Parser p;
 
 	Emulator e;
 										
-	vector<BYTE> program = p.parseFile(argv[1]);
+	vector<BYTE> hepProgram = p.parseFile(argv[1]);
+	vector<BYTE> mepProgram = hepProgram;
+	printProgram(hepProgram);
 
 
-
-	e.loadProgramInMemory(program.data(), program.size());
+	e.loadProgramInMemory(hepProgram.data(), hepProgram.size());
 	vector<Instruction> hep = e.getInstructionVector();
 
-	cout << "Got " << hep.size() << " instructions." << endl;
 
-	int validBytesHep = p.parseUntilInvalid(program.data(), program.size());
+	//cout << "Got " << hep.size() << " instructions." << endl;
+
+	int validBytesHep = p.parseUntilInvalid(hepProgram.data(), hepProgram.size());
 
 	
-	/*for(vector<struct emu_instruction>::iterator itr = hep.begin(); itr != hep.end(); ++itr) {
-		printf("Opcode = %02x , Mod = %02x , Reg = %02x , Rm = %02x\n", itr->opc, itr->cpu.modrm.mod, itr->cpu.modrm.opc, itr->cpu.modrm.rm);	
-	} */
+	int max = 0;
 	
-	for(vector<pair<BYTE, int> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+	for(vector<pair<Opcode, int> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		
-		program.insert(program.begin(), startingBytesIterator->first);
+		int numberOfStartingBytes = startingBytesIterator->first.getOpcodeSize();
+		mepProgram.insert(mepProgram.begin(), startingBytesIterator->first.bytes.begin(), startingBytesIterator->first.bytes.end());
 
-		BYTE opcode = startingBytesIterator->first;
+		int validBytesMep = p.parseUntilInvalid(mepProgram.data(), mepProgram.size());
 
-		int validBytesMep = p.parseUntilInvalid(program.data(), program.size());
-
-		e.loadProgramInMemory(program.data(), validBytesMep);
+		e.loadProgramInMemory(mepProgram.data(), validBytesMep);
 
 		vector<Instruction> mep = e.getInstructionVector();
 
 		if(validBytesMep <= validBytesHep) {
-			program.erase(program.begin());
+			mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
 			continue;
 		}
+		
+		/*
+		printProgram(mepProgram);
 
-		//printf("Inserting %02x\n", opcode);
-		//cout << "MEP is bigger than HEP" << endl;
+		if(InstructionCompare(hep.back(), mep.back())) {
+			cout << "Last is equal" << endl;
+		}
 
-		//printProgram(program);	
+		while(!hep.empty()) {
+
+
+			cout << "HEP: ";
+			printInstructions(hep, hepProgram);
+			
+			cout << "MEP: ";
+			printInstructions(mep, mepProgram);
+
+			if(!InstructionCompare(hep.back(), mep.back())) {
+				cout << "No synced" << endl;
+				break;
+			}
+
+			
+			hep.pop_back();
+			mep.pop_back();
+		}
+
+		cout << "Synced after " << dec << hep.size() << " instructions in HEP and " <<  dec << mep.size() << " in MEP" << endl;
+		*/
 
 		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			if(itr->isLegal()) {
-				//cout << "Legal instruction" << endl;
-				//cout << "My position is: " <<  dec << itr->getStartIndex() << " - " << itr->getEndIndex() << endl;
-			}
-			else {
-				//cout << "Illegal instruction" << endl;
-				//cout << "My position is: " << dec << itr->getStartIndex() << " - " << itr->getEndIndex() << endl;
+			if(!itr->isLegal()) {
+
 				startingBytesIterator->second = distance(mep.begin(), itr);
+				
+				if(distance(mep.begin(), itr) > max) {
+					max = distance(mep.begin(), itr);
+				}
+
 				break;
 			}
 
 		}	
 		
-		program.erase(program.begin());
+		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
 
-		cout << "Byte " << hex << setfill('0') << setw(2) << (int)startingBytesIterator->first << " generated " << dec 
-		<< 	startingBytesIterator->second <<  " legal instructions." <<endl;
 	}
 
+
+
+	
+	cout << "A maximum of" << dec <<  max << " instructions was found" << endl;
+
+	for(vector<pair<Opcode, int> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
+		if(itr->second == max) {
+			cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
+		}
+	}
+	
+
+	cout << "Done" << endl;
+	
 	
 	return 0;
 	
