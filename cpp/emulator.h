@@ -21,7 +21,7 @@ public:
 	Emulator();
 	~Emulator();
 
-	void loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen);
+	void loadProgramInMemory(std::vector<unsigned char> instructionBytes);
 	std::vector<Instruction> getInstructionVector();
 	int runAndGetEFlags();
 	void printDebug();
@@ -30,6 +30,7 @@ private:
 	struct emu *e;
 	struct emu_memory *mem;
 	int static_offset;
+	std::vector<unsigned char> m_memory;
 };
 
 #endif

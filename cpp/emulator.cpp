@@ -14,12 +14,14 @@ Emulator::~Emulator()
 	emu_free(e);
 }
 
-void Emulator::loadProgramInMemory(unsigned char instructionBytes[], int instructionBytesLen)
+void Emulator::loadProgramInMemory(std::vector<unsigned char> instructionBytes)
 {
+	m_memory = instructionBytes;
+	int instructionBytesLen = instructionBytes.size();
 	int i;
 	for(i = 0; i < instructionBytesLen; i++)
 	{
-		emu_memory_write_byte(mem, static_offset+i, instructionBytes[i]);
+		emu_memory_write_byte(mem, static_offset+i, instructionBytes.at(i));
 	}
 	emu_memory_write_byte(mem, static_offset+i, 0xcc);
 }
@@ -40,7 +42,7 @@ std::vector<Instruction> Emulator::getInstructionVector()
 			legalInstruction = true; 
 
 		int endIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset - 1;
-		v.push_back(Instruction(ins, legalInstruction, startIndex, endIndex));
+		v.push_back(Instruction(ins, legalInstruction, startIndex, endIndex, std::vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex)));
 
 		//printf("startIndex =  %d, endIndex = %d\n", startIndex, endIndex);
 
