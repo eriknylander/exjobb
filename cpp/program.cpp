@@ -70,16 +70,12 @@ void printProgram(vector<BYTE> program)
 	cout << endl;
 }
 
-void printInstructions(vector<Instruction> instructions, vector<BYTE> program)
+void printInstructions(vector<Instruction> instructions)
 {
 	stringstream ss;
 	for(vector<Instruction>::iterator itr = instructions.begin(); itr != instructions.end(); ++itr) {
-		int startIndex = itr->getStartIndex();
-		int endIndex = itr->getEndIndex();
 		ss << "[";
-		for(int i = startIndex; i <= endIndex; i++) {
-			ss << hex << setfill('0') << setw(2) <<  (int)program.at(i) << "";
-		}
+		ss << itr->getByteString();
 		ss << "]";
 	}
 
@@ -130,6 +126,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 }
 
 
+
 int main(int argc, char* argv[]) {
 
 	if(argc < 2) {
@@ -147,18 +144,25 @@ int main(int argc, char* argv[]) {
 
 	Emulator e;
 										
-	vector<BYTE> hepProgram = p.parseFile(argv[1]);
-	vector<BYTE> mepProgram = hepProgram;
+	vector<BYTE> program = p.parseFile(argv[1]);
+
+	vector<Instruction> preface;
+	vector<Instruction> hep;
+
+	e.doPreface(program, preface, hep);
+
+
+
+	vector<BYTE> mepProgram = program;
 	//printProgram(hepProgram);
 
 
-	e.loadProgramInMemory(hepProgram);
-	vector<Instruction> hep = e.getInstructionVector();
+	printInstructions(hep);
 
 
 	//cout << "Got " << hep.size() << " instructions." << endl;
 
-	int validBytesHep = p.parseUntilInvalid(hepProgram.data(), hepProgram.size());
+	int validBytesHep = p.parseUntilInvalid(program.data(), program.size());
 	int maxSyncedAfter = 0;
 	int maxBeforeFail = 0;
 	
@@ -242,7 +246,7 @@ int main(int argc, char* argv[]) {
 	
 
 	printf("maxSyncedAfter = %d\n", maxSyncedAfter);
-	printProgram(hepProgram);
+	//printProgram(hepProgram);
 	cout << "Done" << endl;
 	
 	
