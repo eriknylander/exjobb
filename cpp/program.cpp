@@ -22,7 +22,6 @@ struct Opcode
 		stringstream ss;
 		for(vector<BYTE>::reverse_iterator itr = bytes.rbegin(); itr != bytes.rend(); ++itr) {
 			ss << hex << setfill('0') << setw(2) << (int)*itr;
-			//ss << bytes.size() << " bytes : " << (int)*itr;
 		}
 
 		return ss.str();
@@ -87,23 +86,15 @@ void printInstructions(vector<Instruction> instructions, vector<BYTE> program)
 	cout << ss.str() << endl;
 }
 
-
-int main(int argc, char* argv[]) {
-
-	if(argc < 2) {
-		cerr << "Error. Usage: program <file path>" << endl;
-		return 1;
-	}
-
-	
-	// cout << "Building startingBytes" << endl;
+vector<pair<Opcode, int> > buildStartingBytesVector()
+{
 	vector<pair<Opcode, int> > startingBytes;
 	
 	Opcode *a;
 	int counter = 0;
 	for(int prefix = -1; prefix < 0; prefix++) {
 
-		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
+		for(int firstOpc = -1; firstOpc < 0; firstOpc++) {
 
 			for(int secondOpc = 0; secondOpc < 256; secondOpc++) {
 
@@ -135,20 +126,22 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	cout << "Finished building startingBytes" << endl;
-
-	//for(vector<pair<Opcode, int> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
-	//	cout << itr->first.getOpcodeString() << endl;
-	//}
+	return startingBytes;	
+}
 
 
-	//cout << "startingBytes[65791] = " << startingBytes.at(65791).first.getOpcodeString() << endl;
-	//cout << "Size of startingBytes is " << startingBytes.size() << endl;
+int main(int argc, char* argv[]) {
+
+	if(argc < 2) {
+		cerr << "Error. Usage: program <file path>" << endl;
+		return 1;
+	}
+
 	
+	// cout << "Building startingBytes" << endl;
+	vector<pair<Opcode, int> > startingBytes = buildStartingBytesVector();
+	// cout << "Finished building startingBytes" << endl;
 
-	//Opcode a;
-	//a.bytes.push_back(0x0f);
-	//startingBytes.push_back(make_pair(a, -1));
 	
 	Parser p;
 
