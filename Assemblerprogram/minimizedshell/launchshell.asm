@@ -1,3 +1,5 @@
+BITS 32
+
 section .data
 	shellpath: db "/bin/sh",0
 	shellpathlen: equ $-shellpath

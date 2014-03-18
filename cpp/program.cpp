@@ -5,7 +5,7 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
-#include <climits>
+#include <algorithm>
 #include "instruction.h"
 #include "parser.h"
 #include "emulator.h"
@@ -13,11 +13,7 @@
 
 typedef unsigned char BYTE;
 
-using namespace std;	
-
-int prefixMask = 0xFF0000;
-int firstOpcodeMask = 0x00FF00;
-int secondOpcodeMask = 0x0000FF;
+using namespace std;
 
 struct Opcode 
 {
@@ -37,40 +33,7 @@ struct Opcode
 	}
 };
 
-/*
-bool InstructionCompare(Instruction &insa, Instruction &insb)
-{
-	
-	struct emu_cpu_instruction a = insa.getInstruction().cpu;
-	struct emu_cpu_instruction b = insb.getInstruction().cpu;
 
-	
-	if((a.opc == b.opc) && (a.modrm.mod == b.modrm.mod) && (a.modrm.opc == b.modrm.opc) && (a.modrm.sib.base == b.modrm.sib.base)
-			&& (a.modrm.sib.index == b.modrm.sib.index) && (a.modrm.sib.scale == b.modrm.sib.scale) && (a.imm == b.imm) 
-			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp)) {
-	
-	} else {
-		printf("a.opc == b.opc : %d == %d\n", (int)a.opc, (int)b.opc);
-		printf("a.modrm.mod == b.modrm.mod : %d == %d\n", (int)a.modrm.mod, (int)b.modrm.mod);
-		printf("a.modrm.opc == b.modrm.opc : %d == %d\n", (int)a.modrm.opc, (int)b.modrm.opc);
-		printf("a.modrm.sib.base == b.modrm.sib.base : %d == %d\n", (int)a.modrm.sib.base, (int)b.modrm.sib.base);;
-		printf("a.modrm.sib.index == b.modrm.sib.index : %d == %d\n", (int)a.modrm.sib.index,  (int)b.modrm.sib.index);
-		printf("a.modrm.sib.scale == a.modrm.sib.scale : %d == %d\n", (int)a.modrm.sib.scale, (int)b.modrm.sib.scale);
-		printf("a.imm == b.imm : %d == %d\n", (int)a.imm, (int)b.imm);
-		printf("a.imm8 == b.imm8 : %d == %d\n", (int)a.imm8, (int)b.imm8);
-		printf("a.imm16 == b.imm16 : %d == %d\n", (int)a.imm16, (int)b.imm16);
-		printf("a.disp == b.disp : %d == %d\n", (int)a.disp, (int)b.disp);
-	}
-
-	
-	return (a.opc == b.opc) && (a.modrm.mod == b
-.modrm.mod) && (a.modrm.opc == b.modrm.opc) && (a.modrm.sib.base == b.modrm.sib.base)
-			&& (a.modrm.sib.index == b.modrm.sib.index) && (a.modrm.sib.scale == b.modrm.sib.scale)  && (a.imm == b.imm)
-			&& (a.imm8 == b.imm8) && (a.imm16 == b.imm16) && (a.disp == b.disp);  
-	
-
-}
-*/
 
 bool InstructionCompare(Instruction &insa, Instruction &insb) {
 	
@@ -78,7 +41,6 @@ bool InstructionCompare(Instruction &insa, Instruction &insb) {
 	vector<BYTE> bBytes = insb.getBytes();
 
 	if(aBytes.size()!= bBytes.size()) {
-		//printf("%d != %d, returning false\n", aBytes.size(), bBytes.size());
 		return false;
 	}
 
@@ -141,7 +103,7 @@ int main(int argc, char* argv[]) {
 	int counter = 0;
 	for(int prefix = -1; prefix < 0; prefix++) {
 
-		for(int firstOpc = -1; firstOpc < 1; firstOpc++) {
+		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
 
 			for(int secondOpc = 0; secondOpc < 256; secondOpc++) {
 
@@ -205,6 +167,7 @@ int main(int argc, char* argv[]) {
 
 	int validBytesHep = p.parseUntilInvalid(hepProgram.data(), hepProgram.size());
 	int maxSyncedAfter = 0;
+	int maxBeforeFail = 0;
 	
 	for(vector<pair<Opcode, int> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		
@@ -217,6 +180,7 @@ int main(int argc, char* argv[]) {
 		e.loadProgramInMemory(mepProgram);
 
 		vector<Instruction> mep = e.getInstructionVector();
+		vector<Instruction> tempMep = mep;
 
 		if(validBytesMep <= validBytesHep) {
 			mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
@@ -228,7 +192,7 @@ int main(int argc, char* argv[]) {
 		
 		//printProgram(mepProgram);
 		// Check for sync, number of non-synced instructions will be in mep.size(). 
-		while(!tempHep.empty() && !mep.empty()) {
+		while(!tempHep.empty() && !tempMep.empty()) {
 
 			// Print instructions
 			 //cout << "HEP: ";
@@ -237,34 +201,37 @@ int main(int argc, char* argv[]) {
 			 //cout << "MEP: ";
 			 //printInstructions(mep, mepProgram);
 			
-			if(!InstructionCompare(tempHep.back(), mep.back())) {
+			if(!InstructionCompare(tempHep.back(), tempMep.back())) {
 				break;
 			}
 			tempHep.pop_back();
-			mep.pop_back();
+			tempMep.pop_back();
 		}
-		startingBytesIterator->second = mep.size();
+		startingBytesIterator->second = tempMep.size();
 
-		if(mep.size() > maxSyncedAfter) {
-			maxSyncedAfter = mep.size();
+		if(tempMep.size() > maxSyncedAfter) {
+			maxSyncedAfter = tempMep.size();
 		}
 
-		printf("maxSyncedAfter = %d with opcode ", maxSyncedAfter);
-		cout << startingBytesIterator->first.getOpcodeString() << endl;
+		//printf("maxSyncedAfter = %d with opcode ", maxSyncedAfter);
+		//cout << startingBytesIterator->first.getOpcodeString() << endl;
 
-		/*for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+
+		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
 			if(!itr->isLegal()) {
 
-				startingBytesIterator->second = distance(mep.begin(), itr);
+				int nbrLegalIns = distance(mep.begin(), itr);
+				startingBytesIterator->second = max(nbrLegalIns, (int)tempMep.size());
+
 				
-				if(distance(mep.begin(), itr) > max) {
-					max = distance(mep.begin(), itr);
+				if(nbrLegalIns > maxBeforeFail) {
+					maxBeforeFail = nbrLegalIns;
 				}
 
 				break;
 			}
 
-		}*/	
+		}	
 		
 		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
 	}
