@@ -10,7 +10,7 @@ CC      = g++
 #CPPFLAGS  = -DNDEBUG
 #CXXFLAGS  = -pipe -O2 -Wall -W -ansi -pedantic-errors
 #CXXFLAGS += -Wmissing-braces -Wparentheses -Wold-style-cast
-CXXFLAGS = -I/home/erik/libemu/libemu/include 	
+CXXFLAGS = -I/home/erik/libemu/libemu/include -g
 #CXXFLAGS += -ggdb
 #LDFLAGS = -ggdb
 

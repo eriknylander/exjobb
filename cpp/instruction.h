@@ -15,6 +15,7 @@ class Instruction {
 public:
 	typedef unsigned char BYTE;
 	Instruction(struct emu_instruction input, bool legalInstruction, std::vector<BYTE> bytes);
+	Instruction();
 
 	struct emu_instruction getInstruction();
 

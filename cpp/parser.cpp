@@ -33,8 +33,8 @@ vector<unsigned char> Parser::parseFile(char fileName[])
 	return program;
 }
 
-int Parser::parseUntilInvalid(BYTE input[], int len) {
-  ud_set_input_buffer(&ud_obj, input, len);
+int Parser::parseUntilInvalid(vector<BYTE> buffer) {
+  ud_set_input_buffer(&ud_obj, buffer.data(), buffer.size());
 
   int index = 0;
   while (ud_disassemble(&ud_obj)) {

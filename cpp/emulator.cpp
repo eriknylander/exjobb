@@ -55,8 +55,10 @@ vector<Instruction> Emulator::getInstructionVector()
 	return v;
 }
 
-Instruction Emulator::getInstruction(vector<unsigned char> insBytes)
+bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
 {
+
+
 	vector<unsigned char> oldBytes = m_memory;
 	loadProgramInMemory(insBytes);
 
@@ -66,18 +68,29 @@ Instruction Emulator::getInstruction(vector<unsigned char> insBytes)
 	
 	if(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 		struct emu_instruction ins = emu_cpu_get(e)->instr;
+		//printf("Opcode %02x\n", ins.cpu.opc);
 		bool legalInstruction = false;
 
-		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0)
-			legalInstruction = true; 
+		//printf("Prefix: %0d\nOpcode: %02x\n2ndOpcode: %02x\n", ins.cpu.prefixes, ins.cpu.opc, ins.cpu.opc_2nd); 
+		//printf("mod = %d\nreg = %d\n", ins.cpu.modrm.mod, ins.cpu.modrm.opc);
+		
+
+		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0) {
+			legalInstruction = true;
+		}
 
 		int endIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset;
 
 		Instruction i(ins, legalInstruction, vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex));
 
 		loadProgramInMemory(oldBytes);
+
 		
-		return i;
+		
+		ret = i;
+		return true;
+	} else {
+		return false;
 	}
 
 	
@@ -132,7 +145,9 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	//printf("%02x", (unsigned char)(immediate & 0x00FF0000) >> 4);
 	//printf("%02x", (unsigned char)(immediate & 0xFF000000) >> 6);
 
-	preface.push_back(getInstruction(bytes));
+	Instruction newIns;
+	getInstruction(bytes, newIns);
+	preface.push_back(ins);
 
 	// Add add instruction to hep
 	vector<unsigned char> newBytes;
@@ -142,7 +157,9 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	newBytes.push_back(modrm);
 	newBytes.push_back(0x01);
 
-	hep.push_back(getInstruction(newBytes));
+
+	getInstruction(newBytes, newIns);
+	hep.push_back(newIns);
 	
 	
 }

@@ -23,7 +23,7 @@ public:
 
 	void loadProgramInMemory(std::vector<unsigned char> instructionBytes);
 	std::vector<Instruction> getInstructionVector();
-	Instruction getInstruction(std::vector<unsigned char> insBytes);
+	bool getInstruction(std::vector<unsigned char> insBytes, Instruction &ret);
 	int runAndGetEFlags();
 	void doPreface(std::vector<unsigned char> program, std::vector<Instruction> &preface, std::vector<Instruction> &hep);
 	void replaceLEA(Instruction ins, std::vector<Instruction> &preface, std::vector<Instruction> &hep);

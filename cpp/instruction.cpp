@@ -9,6 +9,8 @@ typedef unsigned char BYTE;
 Instruction::Instruction(struct emu_instruction ins, bool legalInstruction, std::vector<BYTE> bytes) : m_ins(ins), 
 								m_legalInstruction(legalInstruction), m_bytes(bytes){}
 
+Instruction::Instruction() {}
+
 struct emu_instruction Instruction::getInstruction() 
 {
 	return m_ins;
