@@ -103,7 +103,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 				if(firstOpc == -1 && prefix == -1) {
 					a->bytes.push_back(secondOpc);
 					
-					if(e.getInstruction(a->bytes, ins) && ins.getBytes().size() > a->getOpcodeSize()) {
+					if(e.getInstruction(a->bytes, ins) && ins.getBytes().size() > a->getOpcodeSize() && secondOpc != 0xf6) {
 						startingBytes.push_back(make_pair(*a, -1));
 					}
 					
@@ -118,7 +118,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 					
 
 					
-					if(gotInstruction && ins.getBytes().size() > a->getOpcodeSize()) {
+					if(gotInstruction && ins.getBytes().size() > a->getOpcodeSize() && firstOpc != 0xf6) {
 						startingBytes.push_back(make_pair(*a, -1));
 					} 
 
@@ -129,7 +129,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 					a->bytes.push_back(firstOpc);
 					a->bytes.push_back(secondOpc);
 					bool gotInstruction = e.getInstruction(a->bytes, ins);
-					if(gotInstruction&& ins.getBytes().size() > a->getOpcodeSize()) {
+					if(gotInstruction&& ins.getBytes().size() > a->getOpcodeSize() && prefix != 0xf6) {
 						startingBytes.push_back(make_pair(*a, -1));
 					} 
 
@@ -159,6 +159,7 @@ vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
 
 
 
+
 int main(int argc, char* argv[]) {
 
 	if(argc < 2) {
@@ -183,8 +184,8 @@ int main(int argc, char* argv[]) {
 	e.doPreface(program, preface, hep);
 
 
-	// Opcode a;
-	// a.bytes.push_back(0xf3); 
+	//Opcode a;
+	//a.bytes.push_back(0xf6); 
 	// a.bytes.push_back(0xf3); 
 	// a.bytes.push_back(0xf7);
 	// // a.bytes.push_back(0x83); 
@@ -201,7 +202,7 @@ int main(int argc, char* argv[]) {
 
 	// e.getInstruction(a.bytes, pre);
 
-	// startingBytes.push_back(make_pair(a, -1));
+	//startingBytes.push_back(make_pair(a, -1));
 
 
 	vector<BYTE> mepProgram = getBytesFromInstructions(hep);
@@ -236,31 +237,37 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 		
-		int mepNumberOfInstructions = mep.size();
-		
+		int hepNumberOfInstructions = hep.size();
+		int poppedInstructionCounter = 0;
 		
 		//printProgram(mepProgram);
 		// Check for sync, number of non-synced instructions will be in mep.size(). 
 		while(!tempHep.empty() && !tempMep.empty()) {
 
 			// Print instructions
-			 //cout << "HEP: ";
-			 //printInstructions(tempHep, hepProgram);
+			// cout << "HEP: ";
+			// printInstructions(tempHep);
 			
-			 //cout << "MEP: ";
-			 //printInstructions(mep, mepProgram);
+			// cout << "MEP: ";
+			// printInstructions(tempMep);
 			
 			if(!InstructionCompare(tempHep.back(), tempMep.back())) {
 				break;
 			}
 			tempHep.pop_back();
 			tempMep.pop_back();
+			poppedInstructionCounter++;
 		}
-		startingBytesIterator->second = tempMep.size();
 
-		if(tempMep.size() > maxSyncedAfter) {
-			maxSyncedAfter = tempMep.size();
+		int numberOfHiddenInstructions = hepNumberOfInstructions - poppedInstructionCounter;
+
+		startingBytesIterator->second = numberOfHiddenInstructions;
+
+		if(numberOfHiddenInstructions > maxSyncedAfter && numberOfHiddenInstructions < hepNumberOfInstructions) {
+			maxSyncedAfter = numberOfHiddenInstructions;
 		}
+
+		
 
 		//printf("maxSyncedAfter = %d with opcode ", maxSyncedAfter);
 		//cout << startingBytesIterator->first.getOpcodeString() << endl;
@@ -311,51 +318,12 @@ int main(int argc, char* argv[]) {
 	cout << "Done removing startingBytes" << endl;
 
 	startingBytes = goodStartingBytes;
-	//TODO: KOLLA OM FÖRSTA INSTRUKTIONEN ÄR LAGLIG
-	// mepProgram.insert(mepProgram.begin(), startingBytes.at(0).first.bytes.begin(), startingBytes.at(0).first.bytes.end());
-	// e.loadProgramInMemory(mepProgram);	
-	// vector<Instruction> instructions = e.getInstructionVector();
-	// printInstructions(instructions);
-
-	// if(instructions.at(0).isLegal()) {
-	// 	cout << "Jag är laglig" << endl;
-	// }
-
-	cout << "Checking for most legal instructions before fail" << endl;
-
-	int maxBeforeFail = 0;
-	int illegalInstructonsCount = 0;
-	for(vector<pair<Opcode, int> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		mepProgram.insert(mepProgram.begin(), startingBytesIterator->first.bytes.begin(), startingBytesIterator->first.bytes.end());
-		e.loadProgramInMemory(mepProgram);
-		vector<Instruction> mep = e.getInstructionVector();
-		int numberOfStartingBytes = startingBytesIterator->first.getOpcodeSize();
-
-		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			if(!itr->isLegal()) {
-
-				int nbrLegalIns = distance(mep.begin(), itr);
-				illegalInstructonsCount++;
-				
-				if(nbrLegalIns > maxBeforeFail) {
-					maxBeforeFail = nbrLegalIns;
-				}
-
-				break;
-			}
-
-		}	
 		
-		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
-	}
 
-	cout << "Done checking for legal instructions" << endl;	
-
-	printf("maxBeforeFail = %d\n", maxBeforeFail);
 	printf("maxSyncedAfter = %d\n", maxSyncedAfter);
 	printProgram(getBytesFromInstructions(hep));
-	printf("Number of illegal startingBytes = %d\n", illegalInstructonsCount);
-	cout << "Done" << endl;
+
+	// TODO: Make progam choose starting bytes in some clever way.
 	
 	
 	return 0;
