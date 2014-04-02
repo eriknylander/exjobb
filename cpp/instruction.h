@@ -14,11 +14,11 @@ class Instruction {
 
 public:
 	typedef unsigned char BYTE;
-	Instruction(struct emu_instruction input, bool legalInstruction, std::vector<BYTE> bytes);
+	Instruction(struct emu_instruction input, struct emu_cpu_instruction_info info, bool legalInstruction, std::vector<BYTE> bytes);
 	Instruction();
 
 	struct emu_instruction getInstruction();
-
+	struct emu_cpu_instruction_info getInstructionInfo();
 	
 	bool isLegal();
 	int getStartIndex();
@@ -30,6 +30,7 @@ public:
 
 private:
 	struct emu_instruction m_ins;
+	struct emu_cpu_instruction_info m_info;
 	bool m_legalInstruction;
 	std::vector<BYTE> m_bytes;
 

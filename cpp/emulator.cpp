@@ -39,13 +39,14 @@ vector<Instruction> Emulator::getInstructionVector()
 	while(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 
 		struct emu_instruction ins = emu_cpu_get(e)->instr;
+		struct emu_cpu_instruction_info info = *(emu_cpu_get(e)->cpu_instr_info);
 		bool legalInstruction = false;
 
 		if(ins.cpu.modrm.mod == 3 || emu_cpu_get(e)->cpu_instr_info->format.modrm_byte == 0)
 			legalInstruction = true; 
 
 		int endIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset;
-		v.push_back(Instruction(ins, legalInstruction, vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex)));
+		v.push_back(Instruction(ins, info, legalInstruction, vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex)));
 
 		//printf("startIndex =  %d, endIndex = %d\n", startIndex, endIndex);
 
@@ -68,6 +69,7 @@ bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
 	
 	if(emu_cpu_parse(emu_cpu_get(e)) == 0) {
 		struct emu_instruction ins = emu_cpu_get(e)->instr;
+		struct emu_cpu_instruction_info info = *(emu_cpu_get(e)->cpu_instr_info);
 		//printf("Opcode %02x\n", ins.cpu.opc);
 		bool legalInstruction = false;
 
@@ -81,7 +83,7 @@ bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
 
 		int endIndex = emu_cpu_eip_get(emu_cpu_get(e)) - static_offset;
 
-		Instruction i(ins, legalInstruction, vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex));
+		Instruction i(ins, info, legalInstruction, vector<unsigned char>(m_memory.begin()+startIndex, m_memory.begin()+endIndex));
 
 		loadProgramInMemory(oldBytes);
 
@@ -112,6 +114,20 @@ void Emulator::doPreface(vector<unsigned char> program, vector<Instruction> &pre
 	}
 }
 
+// unsigned char swapNumbers(unsigned char byte) 
+// {
+// 	unsigned char mostSignificant = byte & 0xF0;
+// 	unsigned char leastSignificant = byte & 0x0F;
+
+// 	mostSignificant >>= 4;
+// 	leastSignificant <<=4;
+
+// 	printf("mostSignificant = %02x, leastSignificant = %02x\n", mostSignificant, leastSignificant);
+
+
+// 	return mostSignificant + leastSignificant;
+// }
+
 void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<Instruction> &hep)
 {
 	int modMask = 0xC0;
@@ -121,33 +137,44 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	// Add lea to preface
 	vector<unsigned char> bytes = ins.getBytes();
 
-	int immediate = 0;
-	int shifter = 0;
+	unsigned int immediate = 0;
+	int shifter = 3*8;
 
-	for(vector<unsigned char>::iterator itr = bytes.begin()+2; itr != bytes.end(); ++itr) {
-		immediate += (*itr << shifter);
-		shifter += 2;
+	for(vector<unsigned char>::reverse_iterator itr = bytes.rbegin(); itr != bytes.rend()-2; ++itr) {
+		printf("byte = %x\n", *itr);
+		unsigned char byte = *itr/*swapNumbers(*itr)*/;
+		printf("swapped byte = %x\n", byte);
+		int buffer = byte;
+		buffer <<= shifter;
+		
+		immediate += buffer;
+
+		shifter -= 8;
 	}
 
 	bytes.erase(bytes.begin()+2, bytes.end());
 
-
+	printf("immediate = %x\n", immediate);
 	immediate -= 1;
+	printf("immediate = %x\n", immediate);
+	
+	int b1 = immediate & 0x000000ff;
+	int b2 = (immediate & 0x0000ff00) >> 8;
+	int b3 = (immediate & 0x00ff0000) >> 16;
+	int b4 = (immediate & 0xff000000) >> 24;
+
 	
 
-	bytes.push_back((immediate & 0x000000FF));
-	bytes.push_back((immediate & 0x0000FF00) >> 2);
-	bytes.push_back((immediate & 0x00FF0000) >> 4);
-	bytes.push_back((immediate & 0xFF000000) >> 6);
+	bytes.push_back((unsigned char)b1);
+	bytes.push_back((unsigned char)b2);
+	bytes.push_back((unsigned char)b3);
+	bytes.push_back((unsigned char)b4);
 
-	//printf("%02x", (unsigned char)immediate & 0x000000FF);
-	//printf("%02x", (unsigned char)(immediate & 0x0000FF00) >> 2);
-	//printf("%02x", (unsigned char)(immediate & 0x00FF0000) >> 4);
-	//printf("%02x", (unsigned char)(immediate & 0xFF000000) >> 6);
+
 
 	Instruction newIns;
 	getInstruction(bytes, newIns);
-	preface.push_back(ins);
+	preface.push_back(newIns);
 
 	// Add add instruction to hep
 	vector<unsigned char> newBytes;
