@@ -11,6 +11,7 @@ _start:
 
 	lea esi, [shellpath]
 	
+	
 	xor eax, eax
 
 	mov dword [esi+shellpathlen], esi

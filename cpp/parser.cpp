@@ -51,3 +51,25 @@ int Parser::parseUntilInvalid(vector<BYTE> buffer) {
   return index;
 
 }
+
+void Parser::parseAndPrintProgram(vector<BYTE> preface, vector<BYTE> mep)
+{
+  ud_set_input_buffer(&ud_obj, preface.data(), preface.size());
+
+  printf("PROGRAM!!!\n\nBITS 32\nsection .data\n;ALLOCATE DATA HERE\n");
+  printf(";Don't forget data for memory access adjustment\nsection .text\n\tglobal _start\n_start:\n;preface");
+  printf(" (Change 0xdeadc0de to according memory access adjusment label\n\n");
+
+  while(ud_disassemble(&ud_obj)) {
+    printf("%s\n", ud_insn_asm(&ud_obj));
+  }
+
+  printf("\njmp mep + (insert startingBytes size here)\n");
+  printf("\n;mep\nmep:\n");
+
+  ud_set_input_buffer(&ud_obj, mep.data(), mep.size());
+
+  while(ud_disassemble(&ud_obj)) {
+    printf("%s\n", ud_insn_asm(&ud_obj));
+  }
+}

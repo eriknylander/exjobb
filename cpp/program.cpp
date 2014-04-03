@@ -90,7 +90,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 	Emulator e;
 
 	int counter = 0;
-	for(int prefix = -1; prefix < 256; prefix++) {
+	for(int prefix = -1; prefix < 0; prefix++) {
 
 		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
 
@@ -156,17 +156,7 @@ vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
 	return byteVector;
 }
 
-void adjustForMemoryAccess(vector<Instruction> &preface, vector<Instruction> &mep)
-{
-	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-		struct emu_instruction ins = itr->getInstruction();
-		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
-		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
-			cout << "GAAAAAAAAAAAAH I'M ACCESSING MEMORY!!!!!!!!!" << endl;
-			printf("I AM %s I WANNA ACCESS THE MEMORY AT [%d] and my displacement is %08x\n", info.name, ins.cpu.modrm.reg, ins.cpu.modrm.ea);
-		}
-	}
-}
+
 
 
 
@@ -344,7 +334,10 @@ int main(int argc, char* argv[]) {
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();
-	adjustForMemoryAccess(preface, mep);
+	e.adjustForMemoryAccess(preface, mep);
+
+	printProgram(getBytesFromInstructions(preface));
+	p.parseAndPrintProgram(getBytesFromInstructions(preface), mepProgram);
 	
 	
 	return 0;

@@ -191,6 +191,67 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	
 }
 
+void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instruction> &mep)
+{
+	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+		struct emu_instruction ins = itr->getInstruction();
+		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
+		printf("%x\n", ins.cpu.modrm.ea);
+		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
+			vector<unsigned char> newBytes;
+			newBytes.push_back(0x8d);
+			unsigned char mod = 0;
+			unsigned char reg = ins.cpu.modrm.reg;
+			reg <<= 3;
+			unsigned char rm = 5;
+			mod += reg;
+			mod += rm;
+
+			newBytes.push_back(mod);
+			newBytes.push_back(0xde);
+			newBytes.push_back(0xc0);
+			newBytes.push_back(0xad);
+			newBytes.push_back(0xde);
+
+			Instruction newIns; 
+			getInstruction(newBytes,newIns);
+			preface.push_back(newIns);
+
+			newBytes.clear();
+			mod = 0;
+			newBytes.push_back(0x81);
+			signed int ea = ins.cpu.modrm.ea;
+			printf("ea = %d\n", ea);
+			if(ea < 0) {
+				mod = 0xc0;
+				mod += ins.cpu.modrm.reg;
+				newBytes.push_back(mod);
+				//printf("mod = %02x\n", mod);
+				ea = ~ea; // 2-complement coversion
+				ea++;
+			} else {
+				mod = 0xe0;
+				mod += (ins.cpu.modrm.reg+8);
+				newBytes.push_back(mod);
+				//printf("mod = %02x\n", mod);
+			}
+
+			
+
+			newBytes.push_back((unsigned char)ea);
+			newBytes.push_back((unsigned char)(ea >> 8));
+			newBytes.push_back((unsigned char)(ea >> 16));
+			newBytes.push_back((unsigned char)(ea >> 24));
+
+			getInstruction(newBytes, newIns);
+
+			preface.push_back(newIns);
+
+
+		}
+	}
+}
+
 int Emulator::runAndGetEFlags() 
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
