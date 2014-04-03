@@ -334,10 +334,12 @@ int main(int argc, char* argv[]) {
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();
-	e.adjustForMemoryAccess(preface, mep);
+
+	vector<Instruction> memoryAdjustment;
+	e.adjustForMemoryAccess(memoryAdjustment, mep);
 
 	printProgram(getBytesFromInstructions(preface));
-	p.parseAndPrintProgram(getBytesFromInstructions(preface), mepProgram);
+	p.parseAndPrintProgram(getBytesFromInstructions(preface), getBytesFromInstructions(memoryAdjustment), mepProgram, bestStartingOpcode.bytes.size());
 	
 	
 	return 0;

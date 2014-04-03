@@ -158,10 +158,10 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	immediate -= 1;
 	printf("immediate = %x\n", immediate);
 	
-	int b1 = immediate & 0x000000ff;
-	int b2 = (immediate & 0x0000ff00) >> 8;
-	int b3 = (immediate & 0x00ff0000) >> 16;
-	int b4 = (immediate & 0xff000000) >> 24;
+	int b1 = /*immediate & 0x000000ff*/0xde;
+	int b2 = /*(immediate & 0x0000ff00) >> 8*/0xc0;
+	int b3 = /*(immediate & 0x00ff0000) >> 16*/0xad;
+	int b4 = /*(immediate & 0xff000000) >> 24*/0xde;
 
 	
 
@@ -196,7 +196,7 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instru
 	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
 		struct emu_instruction ins = itr->getInstruction();
 		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
-		printf("%x\n", ins.cpu.modrm.ea);
+		//printf("%x\n", ins.cpu.modrm.ea);
 		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
 			vector<unsigned char> newBytes;
 			newBytes.push_back(0x8d);
@@ -221,7 +221,7 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instru
 			mod = 0;
 			newBytes.push_back(0x81);
 			signed int ea = ins.cpu.modrm.ea;
-			printf("ea = %d\n", ea);
+			//printf("ea = %d\n", ea);
 			if(ea < 0) {
 				mod = 0xc0;
 				mod += ins.cpu.modrm.reg;

@@ -11,7 +11,7 @@ public:
 	Parser();
 	std::vector<BYTE> parseFile(char fileName[]);
 	int parseUntilInvalid(std::vector<BYTE> buffer);
-	void parseAndPrintProgram(std::vector<BYTE> preface, std::vector<BYTE> mep);
+	void parseAndPrintProgram(std::vector<BYTE> preface, std::vector<BYTE> memoryAdjustment, std::vector<BYTE> mep, int startingOpcodeSize);
 
 private:
 	ud_t ud_obj;
