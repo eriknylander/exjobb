@@ -57,7 +57,8 @@ void Parser::parseAndPrintProgram(vector<BYTE> preface, vector<BYTE> memoryAdjus
 
   printf("PROGRAM!!!\n\nBITS 32\nsection .data\n;ALLOCATE DATA HERE\n");
   printf(";Don't forget data for memory access adjustment\nsection .text\n\tglobal _start\n_start:\n;preface\n");
-  printf("\n;Change 0xdeadc0de to 'label - 1'\n");
+  printf("\n;Change 0xdeadc0de to 'label - 1'\n"); // Don't know address when doing this. Must use label since the .o-file
+                                                   // uses other addresses than the executable file with the elf-header.
 
   ud_set_input_buffer(&ud_obj, preface.data(), preface.size());
   while(ud_disassemble(&ud_obj)) {

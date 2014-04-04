@@ -32,6 +32,24 @@ struct Opcode
 	}
 };
 
+struct OpcodeMetaData
+{
+	char usedRegs[7];
+	int syncNumber;
+
+	int getNumberOfRecurringRegisters() {
+		int min = -1;
+
+		for(int i = 0; i < 8; i++) {
+			if(usedRegs[i] > min) {
+				min = usedRegs[i];
+			}
+		}
+
+		return min;
+	}	
+};
+
 
 
 bool InstructionCompare(Instruction &insa, Instruction &insb) {
@@ -82,9 +100,9 @@ void printInstructions(vector<Instruction> instructions)
 	cout << ss.str() << endl;
 }
 
-vector<pair<Opcode, int> > buildStartingBytesVector()
+vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
 {
-	vector<pair<Opcode, int> > startingBytes;
+	vector<pair<Opcode, OpcodeMetaData> > startingBytes;
 	
 	Opcode *a;
 	Emulator e;
@@ -97,6 +115,8 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 			for(int secondOpc = 0; secondOpc < 256; secondOpc++) {
 
 				a = new Opcode();
+				OpcodeMetaData omd;
+				omd.syncNumber = -1;
 				Instruction ins;
 			
 				
@@ -104,7 +124,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 					a->bytes.push_back(secondOpc);
 					
 					if(e.getInstruction(a->bytes, ins) && ins.getBytes().size() > a->getOpcodeSize() && secondOpc != 0xf6) {
-						startingBytes.push_back(make_pair(*a, -1));
+						startingBytes.push_back(make_pair(*a, omd));
 					}
 					
 					delete a;
@@ -119,7 +139,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 
 					
 					if(gotInstruction && ins.getBytes().size() > a->getOpcodeSize() && firstOpc != 0xf6) {
-						startingBytes.push_back(make_pair(*a, -1));
+						startingBytes.push_back(make_pair(*a, omd));
 					} 
 
 					delete a;
@@ -130,7 +150,7 @@ vector<pair<Opcode, int> > buildStartingBytesVector()
 					a->bytes.push_back(secondOpc);
 					bool gotInstruction = e.getInstruction(a->bytes, ins);
 					if(gotInstruction&& ins.getBytes().size() > a->getOpcodeSize() && prefix != 0xf6) {
-						startingBytes.push_back(make_pair(*a, -1));
+						startingBytes.push_back(make_pair(*a, omd));
 					} 
 
 					
@@ -169,7 +189,7 @@ int main(int argc, char* argv[]) {
 
 	
 	//cout << "Building startingBytes" << endl;
-	vector<pair<Opcode, int> > startingBytes = buildStartingBytesVector();
+	vector<pair<Opcode, OpcodeMetaData> > startingBytes = buildStartingBytesVector();
 	//cout << "Finished building startingBytes" << endl;
 	
 	Parser p;
@@ -224,7 +244,7 @@ int main(int argc, char* argv[]) {
 	int validBytesHep = p.parseUntilInvalid(getBytesFromInstructions(hep));
 	int maxSyncedAfter = 0;
 	
-	for(vector<pair<Opcode, int> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		
 		vector<Instruction> tempHep = hep;
 		int numberOfStartingBytes = startingBytesIterator->first.getOpcodeSize();
@@ -266,33 +286,12 @@ int main(int argc, char* argv[]) {
 
 		int numberOfHiddenInstructions = hepNumberOfInstructions - poppedInstructionCounter;
 
-		startingBytesIterator->second = numberOfHiddenInstructions;
+		startingBytesIterator->second.syncNumber = numberOfHiddenInstructions;
 
 		if(numberOfHiddenInstructions > maxSyncedAfter && numberOfHiddenInstructions < hepNumberOfInstructions) {
 			maxSyncedAfter = numberOfHiddenInstructions;
 		}
-
-		
-
-		//printf("maxSyncedAfter = %d with opcode ", maxSyncedAfter);
-		//cout << startingBytesIterator->first.getOpcodeString() << endl;
-
-
-		// for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-		// 	if(!itr->isLegal()) {
-
-		// 		int nbrLegalIns = distance(mep.begin(), itr);
-		// 		startingBytesIterator->second = max(nbrLegalIns, (int)tempMep.size());
-
-				
-		// 		if(nbrLegalIns > maxBeforeFail) {
-		// 			maxBeforeFail = nbrLegalIns;
-		// 		}
-
-		// 		break;
-		// 	}
-
-		// }	
+	
 		
 		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
 	}
@@ -303,16 +302,10 @@ int main(int argc, char* argv[]) {
 
 	cout << "Removing startingBytes with bad sync number" << endl;
 	//printf("A maximum of %d instructions were found.\n", maxSyncedAfter);
-	vector<pair<Opcode, int> > goodStartingBytes;
-	for(vector<pair<Opcode, int> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
-		if(itr->second == maxSyncedAfter) {
-			// Instruction ins;
-			// e.getInstruction(vector<BYTE>(itr->first.bytes.begin(), itr->first.bytes.end()), ins);
-			// printf("Prefix: %0d\nOpcode: %02x\n2ndOpcode: %02x\n", ins.getInstruction().cpu.prefixes, ins.getInstruction().cpu.opc, ins.getInstruction().cpu.opc_2nd); 
-			// printf("mod = %d\n", ins.getInstruction().cpu.modrm.mod);
-			// if(ins.isLegal()) {
-			// 	cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
-			// }
+	vector<pair<Opcode, OpcodeMetaData> > goodStartingBytes;
+	
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
+		if(itr->second.syncNumber == maxSyncedAfter) {
 			goodStartingBytes.push_back(*itr);
 			cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
 		}
