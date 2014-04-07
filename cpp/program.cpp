@@ -36,7 +36,7 @@ struct OpcodeMetaData
 {
 	char usedRegs[7];
 	int syncNumber;
-
+	int numberOfRecurringRegisters;
 	int getNumberOfRecurringRegisters() {
 		int min = -1;
 
@@ -322,6 +322,26 @@ int main(int argc, char* argv[]) {
 	printProgram(getBytesFromInstructions(hep));
 
 	// TODO: Make progam choose starting bytes in some clever way.
+
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+		Opcode oc = startingBytesIterator->first;
+		int opcodeSize = oc.getOpcodeSize();
+		mepProgram.insert(mepProgram.begin(), oc.bytes.begin(), oc.bytes.end());
+		e.loadProgramInMemory(mepProgram);
+		vector<Instruction> mep = e.getInstructionVector();
+
+		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+			struct emu_instruction ins = itr->getInstruction();
+			struct emu_cpu_instruction_info info = itr->getInstructionInfo();
+
+			if(ins.cpu.modrm.mod != 0xc0 && info.format.modrm_byte != 0) {
+				startingBytesIterator->second.usedRegs[ins.cpu.modrm.reg]++;
+			}
+		}
+
+		startingBytesIterator->second.numberOfRecurringRegisters = startingBytesIterator->second.getNumberOfRecurringRegisters();
+		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + opcodeSize);
+	}
 
 	Opcode bestStartingOpcode = startingBytes.back().first;
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
