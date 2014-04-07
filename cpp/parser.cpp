@@ -59,17 +59,21 @@ void Parser::parseAndPrintProgram(vector<BYTE> preface, vector<BYTE> memoryAdjus
   printf(";Don't forget data for memory access adjustment\nsection .text\n\tglobal _start\n_start:\n;preface\n");
   printf("\n;Change 0xdeadc0de to 'label - 1'\n"); // Don't know address when doing this. Must use label since the .o-file
                                                    // uses other addresses than the executable file with the elf-header.
-
-  ud_set_input_buffer(&ud_obj, preface.data(), preface.size());
+  if(preface.size() > 0) {
+    ud_set_input_buffer(&ud_obj, preface.data(), preface.size());
   while(ud_disassemble(&ud_obj)) {
     printf("%s\n", ud_insn_asm(&ud_obj));
   }
+  }
+  
 
   printf("\n;Memory adjustment stuff (Change 0xdeadc0de to according memory access adjusment label)\n");
 
-  ud_set_input_buffer(&ud_obj, memoryAdjustment.data(), memoryAdjustment.size());
-  while(ud_disassemble(&ud_obj)) {
-    printf("%s\n", ud_insn_asm(&ud_obj));
+  if(memoryAdjustment.size() > 0) {
+    ud_set_input_buffer(&ud_obj, memoryAdjustment.data(), memoryAdjustment.size());
+    while(ud_disassemble(&ud_obj)) {
+      printf("%s\n", ud_insn_asm(&ud_obj));
+    }
   }
 
   printf("\njmp mep + 0x%d\n", startingOpcodeSize);
@@ -80,4 +84,6 @@ void Parser::parseAndPrintProgram(vector<BYTE> preface, vector<BYTE> memoryAdjus
   while(ud_disassemble(&ud_obj)) {
     printf("%s\n", ud_insn_asm(&ud_obj));
   }
+
+  printf("mov eax, 1\nmov ebx, 0\nint 0x80\n");
 }

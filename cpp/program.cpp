@@ -34,7 +34,14 @@ struct Opcode
 
 struct OpcodeMetaData
 {
-	char usedRegs[7];
+
+	OpcodeMetaData() {
+		for (int i = 0; i < 8; i++) {
+			usedRegs[i] = 0;
+		}
+	}
+
+	char usedRegs[8];
 	int syncNumber;
 	int numberOfRecurringRegisters;
 	int getNumberOfRecurringRegisters() {
@@ -47,6 +54,12 @@ struct OpcodeMetaData
 		}
 
 		return min;
+	}
+
+	void printRecurringRegisters() {
+		for(int i = 0; i < 8; i++) {
+			printf("usedRegs[%d] = %d\n", i, usedRegs	[i]);
+		}
 	}	
 };
 
@@ -311,17 +324,18 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	cout << "Size of goodStartingBytes = " << goodStartingBytes.size() << endl;
+	printf("Size of goodStartingBytes = %d\n", goodStartingBytes.size());
 
 	cout << "Done removing startingBytes" << endl;
 
 	startingBytes = goodStartingBytes;
-		
+	goodStartingBytes.clear();
 
 	printf("maxSyncedAfter = %d\n", maxSyncedAfter);
 	printProgram(getBytesFromInstructions(hep));
 
 	// TODO: Make progam choose starting bytes in some clever way.
+	int minNumberOfRecurringRegisters = 1024;
 
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		Opcode oc = startingBytesIterator->first;
@@ -340,10 +354,26 @@ int main(int argc, char* argv[]) {
 		}
 
 		startingBytesIterator->second.numberOfRecurringRegisters = startingBytesIterator->second.getNumberOfRecurringRegisters();
+
+		if(startingBytesIterator->second.numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
+			minNumberOfRecurringRegisters = startingBytesIterator->second.numberOfRecurringRegisters;
+		}
+
 		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + opcodeSize);
 	}
 
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+		if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters) {
+			goodStartingBytes.push_back(make_pair(startingBytesIterator->first, startingBytesIterator->second));
+		}
+	}
+
+	startingBytes = goodStartingBytes;
+
+	printf("startingBytes.size() = %d\n", startingBytes.size());
+	
 	Opcode bestStartingOpcode = startingBytes.back().first;
+	startingBytes.back().second.printRecurringRegisters();
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();

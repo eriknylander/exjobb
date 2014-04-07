@@ -18,7 +18,4 @@ section	.text
 
 	pop ebx
 	pop ebx
-	
-
-	ret
 

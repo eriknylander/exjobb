@@ -193,11 +193,19 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 
 void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instruction> &mep)
 {
+	char usedRegs[8] = { };
 	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
 		struct emu_instruction ins = itr->getInstruction();
 		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
+
 		//printf("%x\n", ins.cpu.modrm.ea);
 		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
+
+			if(usedRegs[ins.cpu.modrm.reg] != 0)
+				continue;
+
+			usedRegs[ins.cpu.modrm.reg] = 1;
+
 			vector<unsigned char> newBytes;
 			newBytes.push_back(0x8d);
 			unsigned char mod = 0;
