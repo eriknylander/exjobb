@@ -141,9 +141,9 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	int shifter = 3*8;
 
 	for(vector<unsigned char>::reverse_iterator itr = bytes.rbegin(); itr != bytes.rend()-2; ++itr) {
-		printf("byte = %x\n", *itr);
+	
 		unsigned char byte = *itr/*swapNumbers(*itr)*/;
-		printf("swapped byte = %x\n", byte);
+		
 		int buffer = byte;
 		buffer <<= shifter;
 		
@@ -154,9 +154,7 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 
 	bytes.erase(bytes.begin()+2, bytes.end());
 
-	printf("immediate = %x\n", immediate);
 	immediate -= 1;
-	printf("immediate = %x\n", immediate);
 	
 	int b1 = /*immediate & 0x000000ff*/0xde;
 	int b2 = /*(immediate & 0x0000ff00) >> 8*/0xc0;
@@ -204,7 +202,7 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instru
 			if(usedRegs[ins.cpu.modrm.reg] != 0)
 				continue;
 
-			usedRegs[ins.cpu.modrm.reg] = 1;
+			usedRegs[ins.cpu.modrm.reg] = 1;	
 
 			vector<unsigned char> newBytes;
 			newBytes.push_back(0x8d);

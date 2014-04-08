@@ -39,11 +39,14 @@ struct OpcodeMetaData
 		for (int i = 0; i < 8; i++) {
 			usedRegs[i] = 0;
 		}
+
+		usesSib = false;
 	}
 
 	char usedRegs[8];
 	int syncNumber;
 	int numberOfRecurringRegisters;
+	bool usesSib;
 	int getNumberOfRecurringRegisters() {
 		int min = -1;
 
@@ -121,7 +124,7 @@ vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
 	Emulator e;
 
 	int counter = 0;
-	for(int prefix = -1; prefix < 0; prefix++) {
+	for(int prefix = -1; prefix < 256; prefix++) {
 
 		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
 
@@ -189,74 +192,11 @@ vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
 	return byteVector;
 }
 
+int checkSyncConditionsAndReturnMax(Parser &p, Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, vector<pair<Opcode, OpcodeMetaData> > &startingBytes)
+{
 
-
-
-
-int main(int argc, char* argv[]) {
-
-	if(argc < 2) {
-		cerr << "Error. Usage: program <file path>" << endl;
-		return 1;
-	}
-
-	
-	//cout << "Building startingBytes" << endl;
-	vector<pair<Opcode, OpcodeMetaData> > startingBytes = buildStartingBytesVector();
-	//cout << "Finished building startingBytes" << endl;
-	
-	Parser p;
-
-	Emulator e;
-										
-	vector<BYTE> program = p.parseFile(argv[1]);
-
-	vector<Instruction> preface;
-	vector<Instruction> hep;
-
-	e.doPreface(program, preface, hep);
-
-	cout << "Preface" << endl;
-	printInstructions(preface);
-	cout << "Hep" << endl;
-	printInstructions(hep);
-
-
-	//Opcode a;
-	//a.bytes.push_back(0xf6); 
-	// a.bytes.push_back(0xf3); 
-	// a.bytes.push_back(0xf7);
-	// // a.bytes.push_back(0x83); 
-	// // a.bytes.push_back(0xc6); 
-	// // a.bytes.push_back(0x01); 
-	// // a.bytes.push_back(0x31); 
-	// // a.bytes.push_back(0xc0); 
-	// // a.bytes.push_back(0x89); 
-	// // a.bytes.push_back(0x76); 
-	// // a.bytes.push_back(0x08); 
-	// // a.bytes.push_back(0x89);
-
-	// Instruction pre;
-
-	// e.getInstruction(a.bytes, pre);
-
-	//startingBytes.push_back(make_pair(a, -1));
-
-
-	vector<BYTE> mepProgram = getBytesFromInstructions(hep);
-	//printProgram(hepProgram);
-
-
-	printInstructions(hep);
-
-
-	//cout << "Got " << hep.size() << " instructions." << endl;
-
-
-	cout << "Checking for best sync conditions" << endl;
 	int validBytesHep = p.parseUntilInvalid(getBytesFromInstructions(hep));
 	int maxSyncedAfter = 0;
-	
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		
 		vector<Instruction> tempHep = hep;
@@ -308,8 +248,76 @@ int main(int argc, char* argv[]) {
 		
 		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
 	}
- 
 
+	return maxSyncedAfter;
+}
+
+
+
+
+int main(int argc, char* argv[]) {
+
+	if(argc < 2) {
+		cerr << "Error. Usage: program <file path>" << endl;
+		return 1;
+	}
+
+	
+	//cout << "Building startingBytes" << endl;
+	vector<pair<Opcode, OpcodeMetaData> > startingBytes = buildStartingBytesVector();
+	//cout << "Finished building startingBytes" << endl;
+	
+	Parser p;
+
+	Emulator e;
+										
+	vector<BYTE> program = p.parseFile(argv[1]);
+
+	vector<Instruction> preface;
+	vector<Instruction> hep;
+
+	e.doPreface(program, preface, hep);
+
+	// cout << "Preface" << endl;
+	// printInstructions(preface);
+	// cout << "Hep" << endl;
+	// printInstructions(hep);
+
+
+	//Opcode a;
+	//a.bytes.push_back(0xf6); 
+	// a.bytes.push_back(0xf3); 
+	// a.bytes.push_back(0xf7);
+	// // a.bytes.push_back(0x83); 
+	// // a.bytes.push_back(0xc6); 
+	// // a.bytes.push_back(0x01); 
+	// // a.bytes.push_back(0x31); 
+	// // a.bytes.push_back(0xc0); 
+	// // a.bytes.push_back(0x89); 
+	// // a.bytes.push_back(0x76); 
+	// // a.bytes.push_back(0x08); 
+	// // a.bytes.push_back(0x89);
+
+	// Instruction pre;
+
+	// e.getInstruction(a.bytes, pre);
+
+	//startingBytes.push_back(make_pair(a, -1));
+
+
+	vector<BYTE> mepProgram = getBytesFromInstructions(hep);
+	//printProgram(hepProgram);
+
+
+	printInstructions(hep);
+
+
+	//cout << "Got " << hep.size() << " instructions." << endl;
+
+
+	cout << "Checking for best sync conditions" << endl;
+	int maxSyncedAfter = checkSyncConditionsAndReturnMax(p, e, hep, mepProgram, startingBytes);
+	
  	cout << "Done checking sync conditions" << endl;
 
 
@@ -320,7 +328,7 @@ int main(int argc, char* argv[]) {
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
 		if(itr->second.syncNumber == maxSyncedAfter) {
 			goodStartingBytes.push_back(*itr);
-			cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
+			//cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
 		}
 	}
 
@@ -344,12 +352,16 @@ int main(int argc, char* argv[]) {
 		e.loadProgramInMemory(mepProgram);
 		vector<Instruction> mep = e.getInstructionVector();
 
+
 		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
 			struct emu_instruction ins = itr->getInstruction();
 			struct emu_cpu_instruction_info info = itr->getInstructionInfo();
 
 			if(ins.cpu.modrm.mod != 0xc0 && info.format.modrm_byte != 0) {
 				startingBytesIterator->second.usedRegs[ins.cpu.modrm.reg]++;
+				if(ins.cpu.modrm.rm == 0x4) {
+					startingBytesIterator->second.usesSib = true;
+				}
 			}
 		}
 
@@ -363,7 +375,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters) {
+		if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters && !startingBytesIterator->second.usesSib) {
 			goodStartingBytes.push_back(make_pair(startingBytesIterator->first, startingBytesIterator->second));
 		}
 	}
@@ -377,6 +389,8 @@ int main(int argc, char* argv[]) {
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();
+
+	
 
 	vector<Instruction> memoryAdjustment;
 	e.adjustForMemoryAccess(memoryAdjustment, mep);
