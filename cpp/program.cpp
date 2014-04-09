@@ -124,7 +124,7 @@ vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
 	Emulator e;
 
 	int counter = 0;
-	for(int prefix = -1; prefix < 256; prefix++) {
+	for(int prefix = -1; prefix < 0; prefix++) {
 
 		for(int firstOpc = -1; firstOpc < 256; firstOpc++) {
 
@@ -252,6 +252,122 @@ int checkSyncConditionsAndReturnMax(Parser &p, Emulator &e, vector<Instruction> 
 	return maxSyncedAfter;
 }
 
+int checkSyncConditionsAndReturnSyncNumber(Parser &p, Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, Opcode &opc, OpcodeMetaData &opc_meta)
+{
+	int validBytesHep = p.parseUntilInvalid(getBytesFromInstructions(hep));
+	vector<Instruction> tempHep = hep;
+	int numberOfStartingBytes = opc.getOpcodeSize();
+	mepProgram.insert(mepProgram.begin(), opc.bytes.begin(), opc.bytes.end());
+	//printProgram(mepProgram);
+	int validBytesMep = p.parseUntilInvalid(mepProgram);
+
+	e.loadProgramInMemory(mepProgram);
+
+	vector<Instruction> mep = e.getInstructionVector();
+	vector<Instruction> tempMep = mep;
+
+	if(validBytesMep <= validBytesHep) {
+		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
+		return -1;
+	}
+	
+	int hepNumberOfInstructions = hep.size();
+	int poppedInstructionCounter = 0;
+	
+	//printProgram(mepProgram);
+	// Check for sync, number of non-synced instructions will be in mep.size(). 
+	while(!tempHep.empty() && !tempMep.empty()) {
+
+		// Print instructions
+		// cout << "HEP: ";
+		// printInstructions(tempHep);
+		
+		// cout << "MEP: ";
+		// printInstructions(tempMep);
+		
+		if(!InstructionCompare(tempHep.back(), tempMep.back())) {
+			break;
+		}
+		tempHep.pop_back();
+		tempMep.pop_back();
+		poppedInstructionCounter++;
+	}
+
+	int numberOfHiddenInstructions = hepNumberOfInstructions - poppedInstructionCounter;
+
+	opc_meta.syncNumber = numberOfHiddenInstructions;
+
+	mepProgram.erase(mepProgram.begin(), mepProgram.begin() + numberOfStartingBytes);
+
+	return numberOfHiddenInstructions;
+}
+
+int calculateRecurringRegistersAndReturnMin(Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, vector<pair<Opcode, OpcodeMetaData> > &startingBytes) 
+{
+	int minNumberOfRecurringRegisters = 1024;
+
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+		Opcode oc = startingBytesIterator->first;
+		int opcodeSize = oc.getOpcodeSize();
+		mepProgram.insert(mepProgram.begin(), oc.bytes.begin(), oc.bytes.end());
+		e.loadProgramInMemory(mepProgram);
+		vector<Instruction> mep = e.getInstructionVector();
+
+
+		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+			struct emu_instruction ins = itr->getInstruction();
+			struct emu_cpu_instruction_info info = itr->getInstructionInfo();
+
+			if(ins.cpu.modrm.mod != 0xc0 && info.format.modrm_byte != 0) {
+				startingBytesIterator->second.usedRegs[ins.cpu.modrm.reg]++;
+				if(ins.cpu.modrm.rm == 0x4) {
+					startingBytesIterator->second.usesSib = true;
+				}
+			}
+		}
+
+		startingBytesIterator->second.numberOfRecurringRegisters = startingBytesIterator->second.getNumberOfRecurringRegisters();
+
+		if(startingBytesIterator->second.numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
+			minNumberOfRecurringRegisters = startingBytesIterator->second.numberOfRecurringRegisters;
+		}
+
+		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + opcodeSize);
+	}
+
+
+	return minNumberOfRecurringRegisters;
+}
+
+int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, Opcode &opc, OpcodeMetaData &opc_meta)
+{
+	
+	int opcodeSize = opc.getOpcodeSize();
+	mepProgram.insert(mepProgram.begin(), opc.bytes.begin(), opc.bytes.end());
+	e.loadProgramInMemory(mepProgram);
+	vector<Instruction> mep = e.getInstructionVector();
+
+
+	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+		struct emu_instruction ins = itr->getInstruction();
+		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
+
+		if(ins.cpu.modrm.mod != 0xc0 && info.format.modrm_byte != 0) {
+			opc_meta.usedRegs[ins.cpu.modrm.reg]++;
+			if(ins.cpu.modrm.rm == 0x4) {
+				opc_meta.usesSib = true;
+			}
+		}
+	}
+
+	opc_meta.numberOfRecurringRegisters = opc_meta.getNumberOfRecurringRegisters();
+
+
+	mepProgram.erase(mepProgram.begin(), mepProgram.begin() + opcodeSize);
+
+	return opc_meta.numberOfRecurringRegisters;
+}
+
 
 
 
@@ -316,8 +432,17 @@ int main(int argc, char* argv[]) {
 
 
 	cout << "Checking for best sync conditions" << endl;
-	int maxSyncedAfter = checkSyncConditionsAndReturnMax(p, e, hep, mepProgram, startingBytes);
-	
+	//int maxSyncedAfter = checkSyncConditionsAndReturnMax(p, e, hep, mepProgram, startingBytes);
+	int maxSyncedAfter = 0;
+	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+		int syncNumber = checkSyncConditionsAndReturnSyncNumber(p, e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
+
+		if(syncNumber > maxSyncedAfter) {
+			maxSyncedAfter = syncNumber;
+		}
+		
+	}
+
  	cout << "Done checking sync conditions" << endl;
 
 
@@ -343,36 +468,20 @@ int main(int argc, char* argv[]) {
 	printProgram(getBytesFromInstructions(hep));
 
 	// TODO: Make progam choose starting bytes in some clever way.
+
+	printf("Calculating recurring registers and usage of sib bytes\n");
+
+	//int minNumberOfRecurringRegisters = calculateRecurringRegistersAndReturnMin(e, hep, mepProgram, startingBytes);
+
 	int minNumberOfRecurringRegisters = 1024;
-
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		Opcode oc = startingBytesIterator->first;
-		int opcodeSize = oc.getOpcodeSize();
-		mepProgram.insert(mepProgram.begin(), oc.bytes.begin(), oc.bytes.end());
-		e.loadProgramInMemory(mepProgram);
-		vector<Instruction> mep = e.getInstructionVector();
+		int numberOfRecurringRegisters = calculateRecurringRegisters(e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
 
-
-		for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
-			struct emu_instruction ins = itr->getInstruction();
-			struct emu_cpu_instruction_info info = itr->getInstructionInfo();
-
-			if(ins.cpu.modrm.mod != 0xc0 && info.format.modrm_byte != 0) {
-				startingBytesIterator->second.usedRegs[ins.cpu.modrm.reg]++;
-				if(ins.cpu.modrm.rm == 0x4) {
-					startingBytesIterator->second.usesSib = true;
-				}
-			}
+		if(numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
+			minNumberOfRecurringRegisters = numberOfRecurringRegisters;
 		}
-
-		startingBytesIterator->second.numberOfRecurringRegisters = startingBytesIterator->second.getNumberOfRecurringRegisters();
-
-		if(startingBytesIterator->second.numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
-			minNumberOfRecurringRegisters = startingBytesIterator->second.numberOfRecurringRegisters;
-		}
-
-		mepProgram.erase(mepProgram.begin(), mepProgram.begin() + opcodeSize);
 	}
+
 
 	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
 		if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters && !startingBytesIterator->second.usesSib) {
@@ -385,7 +494,7 @@ int main(int argc, char* argv[]) {
 	printf("startingBytes.size() = %d\n", startingBytes.size());
 	
 	Opcode bestStartingOpcode = startingBytes.back().first;
-	startingBytes.back().second.printRecurringRegisters();
+	//startingBytes.back().second.printRecurringRegisters();
 	mepProgram.insert(mepProgram.begin(), bestStartingOpcode.bytes.begin(), bestStartingOpcode.bytes.end());
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();
