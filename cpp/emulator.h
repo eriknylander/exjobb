@@ -28,7 +28,7 @@ public:
 	void doPreface(std::vector<unsigned char> program, std::vector<Instruction> &preface, std::vector<Instruction> &hep);
 	void replaceLEA(Instruction ins, std::vector<Instruction> &preface, std::vector<Instruction> &hep);
 	void printDebug();
-	void adjustForMemoryAccess(std::vector<Instruction> &preface, std::vector<Instruction> &hep);
+	void adjustForMemoryAccess(std::vector<Instruction> &memoryAdjustment, std::vector<Instruction> &mep);
 
 private:
 	struct emu *e;

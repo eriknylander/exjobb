@@ -141,7 +141,7 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	int shifter = 3*8;
 
 	for(vector<unsigned char>::reverse_iterator itr = bytes.rbegin(); itr != bytes.rend()-2; ++itr) {
-	
+		
 		unsigned char byte = *itr/*swapNumbers(*itr)*/;
 		
 		int buffer = byte;
@@ -189,22 +189,46 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	
 }
 
-void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instruction> &mep)
+void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vector<Instruction> &mep)
 {
 	char usedRegs[8] = { };
+
+	bool pushedESP = false;
+	bool pushedEBP = false;
+
+	vector<unsigned char> newBytes;
+	Instruction newIns; 
+
 	for(vector<Instruction>::iterator itr = mep.begin(); itr != mep.end(); ++itr) {
+		
 		struct emu_instruction ins = itr->getInstruction();
 		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
 
 		//printf("%x\n", ins.cpu.modrm.ea);
 		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
+			newBytes.clear();
 
 			if(usedRegs[ins.cpu.modrm.reg] != 0)
 				continue;
 
 			usedRegs[ins.cpu.modrm.reg] = 1;	
 
-			vector<unsigned char> newBytes;
+			if(ins.cpu.modrm.reg == 0x4) {
+				newBytes.push_back(0x54);
+				getInstruction(newBytes, newIns);
+				memoryAdjustment.push_back(newIns);
+				pushedESP = true;
+				newBytes.clear();
+
+			} else if (ins.cpu.modrm.reg == 0x5) {
+				newBytes.push_back(0x55);
+				getInstruction(newBytes, newIns);
+				memoryAdjustment.push_back(newIns);
+				pushedEBP = true;
+				newBytes.clear();
+			}
+
+			
 			newBytes.push_back(0x8d);
 			unsigned char mod = 0;
 			unsigned char reg = ins.cpu.modrm.reg;
@@ -219,9 +243,9 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instru
 			newBytes.push_back(0xad);
 			newBytes.push_back(0xde);
 
-			Instruction newIns; 
+			
 			getInstruction(newBytes,newIns);
-			preface.push_back(newIns);
+			memoryAdjustment.push_back(newIns);
 
 			newBytes.clear();
 			mod = 0;
@@ -251,11 +275,29 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &preface, vector<Instru
 
 			getInstruction(newBytes, newIns);
 
-			preface.push_back(newIns);
+			memoryAdjustment.push_back(newIns);
 
 
 		}
 	}
+
+	if(pushedESP) {
+		newBytes.clear();
+
+		newBytes.push_back(0x5c);
+		getInstruction(newBytes, newIns);
+		mep.push_back(newIns);
+	}
+
+	if(pushedEBP) {
+		newBytes.clear();
+		newBytes.push_back(0x5d);
+		getInstruction(newBytes, newIns);
+		mep.push_back(newIns);
+		printf("Popping ebp\n");
+	}
+
+
 }
 
 int Emulator::runAndGetEFlags() 

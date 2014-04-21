@@ -373,8 +373,8 @@ int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BY
 
 int main(int argc, char* argv[]) {
 
-	if(argc < 2) {
-		cerr << "Error. Usage: program <file path>" << endl;
+	if(argc < 3) {
+		cerr << "Error. Usage: program <file path> <number of instructions>" << endl;
 		return 1;
 	}
 
@@ -386,39 +386,15 @@ int main(int argc, char* argv[]) {
 	Parser p;
 
 	Emulator e;
+
+	int numberOfInstructions = atoi(argv[2]);
 										
-	vector<BYTE> program = p.parseFile(argv[1]);
+	vector<BYTE> program = p.parseFile(argv[1], numberOfInstructions);
 
 	vector<Instruction> preface;
 	vector<Instruction> hep;
 
 	e.doPreface(program, preface, hep);
-
-	// cout << "Preface" << endl;
-	// printInstructions(preface);
-	// cout << "Hep" << endl;
-	// printInstructions(hep);
-
-
-	//Opcode a;
-	//a.bytes.push_back(0xf6); 
-	// a.bytes.push_back(0xf3); 
-	// a.bytes.push_back(0xf7);
-	// // a.bytes.push_back(0x83); 
-	// // a.bytes.push_back(0xc6); 
-	// // a.bytes.push_back(0x01); 
-	// // a.bytes.push_back(0x31); 
-	// // a.bytes.push_back(0xc0); 
-	// // a.bytes.push_back(0x89); 
-	// // a.bytes.push_back(0x76); 
-	// // a.bytes.push_back(0x08); 
-	// // a.bytes.push_back(0x89);
-
-	// Instruction pre;
-
-	// e.getInstruction(a.bytes, pre);
-
-	//startingBytes.push_back(make_pair(a, -1));
 
 
 	vector<BYTE> mepProgram = getBytesFromInstructions(hep);
@@ -504,8 +480,10 @@ int main(int argc, char* argv[]) {
 	vector<Instruction> memoryAdjustment;
 	e.adjustForMemoryAccess(memoryAdjustment, mep);
 
-	printProgram(getBytesFromInstructions(preface));
-	p.parseAndPrintProgram(getBytesFromInstructions(preface), getBytesFromInstructions(memoryAdjustment), mepProgram, bestStartingOpcode.bytes.size());
+	p.parseAndPrintPreface(getBytesFromInstructions(preface)); 
+	p.parseAndPrintMemoryAdjustment(getBytesFromInstructions(memoryAdjustment)); 
+	p.parseAndPrintProgram(getBytesFromInstructions(mep), bestStartingOpcode.bytes.size(), 0);
+	p.printProgramReturn();
 	
 	
 	return 0;

@@ -9,9 +9,12 @@ class Parser {
 public:
 	typedef unsigned char BYTE;
 	Parser();
-	std::vector<BYTE> parseFile(char fileName[]);
+	std::vector<BYTE> parseFile(char fileName[], int numberOfInstructions);
 	int parseUntilInvalid(std::vector<BYTE> buffer);
-	void parseAndPrintProgram(std::vector<BYTE> preface, std::vector<BYTE> memoryAdjustment, std::vector<BYTE> mep, int startingOpcodeSize);
+	void parseAndPrintPreface(std::vector<BYTE> preface);
+	void parseAndPrintMemoryAdjustment(std::vector<BYTE> memoryAdjustment);
+	void parseAndPrintProgram(std::vector<BYTE> mep, int startingOpcodeSize, int index);
+	void printProgramReturn();
 
 private:
 	ud_t ud_obj;
