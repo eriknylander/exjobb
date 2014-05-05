@@ -205,7 +205,8 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vect
 		struct emu_cpu_instruction_info info = itr->getInstructionInfo();
 
 		//printf("%x\n", ins.cpu.modrm.ea);
-		if(ins.cpu.modrm.mod != 0xC0 && info.format.modrm_byte != 0) {
+		if(ins.cpu.modrm.mod < 3 && info.format.modrm_byte != 0) {
+
 			newBytes.clear();
 
 			if(usedRegs[ins.cpu.modrm.reg] != 0)
@@ -298,6 +299,91 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vect
 	}
 
 
+}
+
+vector<Instruction> Emulator::substituteMov(Instruction &a) {
+	vector<Instruction> ret;
+
+
+	emu_instruction ins = a.getInstruction();
+	emu_cpu_instruction_info info = a.getInstructionInfo();
+
+	unsigned char reg = ins.cpu.opc - 0xb8;
+
+	vector<unsigned char> newBytes;
+	Instruction newIns;
+
+	// Insert 16-bit mov
+	newBytes.push_back(0x66);
+	newBytes.push_back(ins.cpu.opc);
+	
+	vector<unsigned char> aBytes = a.getBytes();
+	unsigned char a4 = aBytes.back();
+	aBytes.pop_back();
+	unsigned char a3 = aBytes.back();
+	aBytes.pop_back();
+	unsigned char a2 = aBytes.back();
+	aBytes.pop_back();
+	unsigned char a1 = aBytes.back();
+	aBytes.pop_back();
+
+	newBytes.insert(newBytes.begin()+2, a1);
+	newBytes.insert(newBytes.begin()+3, a2);
+
+	getInstruction(newBytes, newIns);
+	newIns.printInstruction();
+
+	ret.push_back(newIns);
+
+	newBytes.clear();
+
+
+	// Shift left
+	newBytes.push_back(0xc1);
+	unsigned char modrm = 0xe0 + reg;
+	newBytes.push_back(modrm);
+	newBytes.push_back(0x10);
+
+	getInstruction(newBytes, newIns);
+	newIns.printInstruction();
+
+
+	ret.push_back(newIns);
+	newBytes.clear();
+
+	// 16-bit move again for the rest of the bytes
+	newBytes.push_back(0x66);
+	newBytes.push_back(ins.cpu.opc);
+	
+	newBytes.insert(newBytes.begin()+2, a3);
+	newBytes.insert(newBytes.begin()+3, a4);
+
+	getInstruction(newBytes, newIns);
+	newIns.printInstruction();
+
+	ret.push_back(newIns);
+
+	return ret;
+
+}
+
+vector<Instruction> Emulator::optimizeHep(vector<Instruction> hep) {
+	vector<Instruction> retVector;
+
+	for(vector<Instruction>::iterator itr = hep.begin(); itr != hep.end(); ++itr) {
+		emu_instruction ins = itr->getInstruction();
+		emu_cpu_instruction_info info = itr->getInstructionInfo();
+		//printf("Instruction with opc_2nd: %02x\n", ins.cpu.opc_2nd);
+		if(ins.cpu.opc >= 0xb8 && ins.cpu.opc <= 0xbf && ins.cpu.prefixes != 0x66) {
+			//Substitute long mov instruction
+			vector<Instruction> newInstructions = substituteMov(*itr);
+			retVector.insert(retVector.end(), newInstructions.begin(), newInstructions.end());
+		}
+
+		retVector.push_back(*itr);
+	}
+
+	return retVector;
 }
 
 int Emulator::runAndGetEFlags() 

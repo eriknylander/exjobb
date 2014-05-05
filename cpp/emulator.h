@@ -29,6 +29,8 @@ public:
 	void replaceLEA(Instruction ins, std::vector<Instruction> &preface, std::vector<Instruction> &hep);
 	void printDebug();
 	void adjustForMemoryAccess(std::vector<Instruction> &memoryAdjustment, std::vector<Instruction> &mep);
+	std::vector<Instruction> optimizeHep(std::vector<Instruction> hep);
+	std::vector<Instruction> substituteMov(Instruction &a);
 
 private:
 	struct emu *e;

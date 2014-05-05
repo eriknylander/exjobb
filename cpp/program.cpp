@@ -275,7 +275,8 @@ int checkSyncConditionsAndReturnSyncNumber(Parser &p, Emulator &e, vector<Instru
 	int poppedInstructionCounter = 0;
 	
 	//printProgram(mepProgram);
-	// Check for sync, number of non-synced instructions will be in mep.size(). 
+	// Check for sync, number of non-synced instructions will be in mep.size().
+
 	while(!tempHep.empty() && !tempMep.empty()) {
 
 		// Print instructions
@@ -381,6 +382,7 @@ int main(int argc, char* argv[]) {
 	
 	//cout << "Building startingBytes" << endl;
 	vector<pair<Opcode, OpcodeMetaData> > startingBytes = buildStartingBytesVector();
+
 	//cout << "Finished building startingBytes" << endl;
 	
 	Parser p;
@@ -395,75 +397,91 @@ int main(int argc, char* argv[]) {
 	vector<Instruction> hep;
 
 	e.doPreface(program, preface, hep);
+	//hep = e.optimizeHep(hep);
+	vector<pair<Opcode, OpcodeMetaData> > oldStartingBytes = startingBytes;
 
-
+	
 	vector<BYTE> mepProgram = getBytesFromInstructions(hep);
 	//printProgram(hepProgram);
 
 
 	printInstructions(hep);
 
-
+	
 	//cout << "Got " << hep.size() << " instructions." << endl;
-
-
-	cout << "Checking for best sync conditions" << endl;
-	//int maxSyncedAfter = checkSyncConditionsAndReturnMax(p, e, hep, mepProgram, startingBytes);
-	int maxSyncedAfter = 0;
-	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		int syncNumber = checkSyncConditionsAndReturnSyncNumber(p, e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
-
-		if(syncNumber > maxSyncedAfter) {
-			maxSyncedAfter = syncNumber;
-		}
-		
-	}
-
- 	cout << "Done checking sync conditions" << endl;
-
-
-	cout << "Removing startingBytes with bad sync number" << endl;
-	//printf("A maximum of %d instructions were found.\n", maxSyncedAfter);
+	bool foundOkayStuff = false;
 	vector<pair<Opcode, OpcodeMetaData> > goodStartingBytes;
 	
-	for(vector<pair<Opcode, OpcodeMetaData> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
-		if(itr->second.syncNumber == maxSyncedAfter) {
-			goodStartingBytes.push_back(*itr);
-			//cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
+	do {
+		cout << "Checking for best sync conditions" << endl;
+
+		goodStartingBytes.clear();
+		//int maxSyncedAfter = checkSyncConditionsAndReturnMax(p, e, hep, mepProgram, startingBytes);
+		int maxSyncedAfter = 0;
+		for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+			int syncNumber = checkSyncConditionsAndReturnSyncNumber(p, e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
+
+			if(syncNumber > maxSyncedAfter) {
+				maxSyncedAfter = syncNumber;
+			}
+			
 		}
-	}
 
-	printf("Size of goodStartingBytes = %d\n", goodStartingBytes.size());
+	 	cout << "Done checking sync conditions" << endl;
 
-	cout << "Done removing startingBytes" << endl;
 
-	startingBytes = goodStartingBytes;
-	goodStartingBytes.clear();
-
-	printf("maxSyncedAfter = %d\n", maxSyncedAfter);
-	printProgram(getBytesFromInstructions(hep));
-
-	// TODO: Make progam choose starting bytes in some clever way.
-
-	printf("Calculating recurring registers and usage of sib bytes\n");
-
-	//int minNumberOfRecurringRegisters = calculateRecurringRegistersAndReturnMin(e, hep, mepProgram, startingBytes);
-
-	int minNumberOfRecurringRegisters = 1024;
-	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		int numberOfRecurringRegisters = calculateRecurringRegisters(e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
-
-		if(numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
-			minNumberOfRecurringRegisters = numberOfRecurringRegisters;
+		cout << "Removing startingBytes with bad sync number" << endl;
+		//printf("A maximum of %d instructions were found.\n", maxSyncedAfter);
+		
+		
+		for(vector<pair<Opcode, OpcodeMetaData> >::iterator itr = startingBytes.begin(); itr != startingBytes.end(); ++itr) {
+			if(itr->second.syncNumber == maxSyncedAfter) {
+				goodStartingBytes.push_back(*itr);
+				//cout << "Opcode " << itr->first.getOpcodeString() << " generated maximum number of valid bytes." << endl;
+			}
 		}
-	}
 
+		printf("Size of goodStartingBytes = %d\n", goodStartingBytes.size());
 
-	for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
-		if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters && !startingBytesIterator->second.usesSib) {
-			goodStartingBytes.push_back(make_pair(startingBytesIterator->first, startingBytesIterator->second));
+		cout << "Done removing startingBytes" << endl;
+
+		startingBytes = goodStartingBytes;
+		goodStartingBytes.clear();
+
+		printf("maxSyncedAfter = %d\n", maxSyncedAfter);
+		printProgram(getBytesFromInstructions(hep));
+
+		// TODO: Make progam choose starting bytes in some clever way.
+
+		printf("Calculating recurring registers and usage of sib bytes\n");
+
+		//int minNumberOfRecurringRegisters = calculateRecurringRegistersAndReturnMin(e, hep, mepProgram, startingBytes);
+
+		int minNumberOfRecurringRegisters = 1024;
+		for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+			int numberOfRecurringRegisters = calculateRecurringRegisters(e, hep, mepProgram, startingBytesIterator->first, startingBytesIterator->second);
+
+			if(numberOfRecurringRegisters < minNumberOfRecurringRegisters) {
+				minNumberOfRecurringRegisters = numberOfRecurringRegisters;
+			}
 		}
-	}
+
+
+		for(vector<pair<Opcode, OpcodeMetaData> >::iterator startingBytesIterator = startingBytes.begin(); startingBytesIterator != startingBytes.end(); ++startingBytesIterator) {
+			if(startingBytesIterator->second.numberOfRecurringRegisters == minNumberOfRecurringRegisters && !startingBytesIterator->second.usesSib) {
+				goodStartingBytes.push_back(make_pair(startingBytesIterator->first, startingBytesIterator->second));
+			}
+		}
+
+		if(goodStartingBytes.size() == 0) {
+			startingBytes = oldStartingBytes;
+			mepProgram.insert(mepProgram.begin(), 0x90);
+			foundOkayStuff = false;
+		} else {
+			foundOkayStuff = true;
+		}
+
+	} while(!foundOkayStuff);
 
 	startingBytes = goodStartingBytes;
 
