@@ -139,7 +139,7 @@ The two \emph{Mod} bits determines if the instruction shall access memory at an 
 \end{description}
 
 \noindent \uline{Reg}\\
-The \emph{Reg} field will denote a register: \\ 000 - eax, 001 - ecx, 010 - edx, 011 - ebx, 100 - esp, 101 - ebp, 110 - esi, 111 - edi.
+The \emph{Reg} field will denote a register: \\ 000 - eax, 001 - ecx, 010 - edx, 011 - ebx, 100 - esp, 101 - ebp, 110 - esi, 111 - edi.\\
 
 
 \noindent \uline{R/M}\\
@@ -366,12 +366,48 @@ The explanation for why interrupting instructions are undesireable in the MEP is
 
 \noindent Since memory access is a tricky problem to handle it is desired to have as few instructions accessing memory as possible. As a part of the ranking of starting bytes, the number of memory accessing instructions for each of the starting bytes is calculated and saved. The \texttt{OpcodeMetaData} object contains a \texttt{char usedRegs[]} array with eight elements, one for each register. To calculate the number of memory accessing instruction, the tool inserts each of the starting bytes before the HEP again an then loops through the generated MEP. When a memory accessing instruction is found, the register with the memory address being accessed is determined and the corresponding element in the \texttt{usedRegs} array is added by one. The number is then calculated by adding all the numbers in \texttt{usedRegs}. This could have been done without using the \texttt{usedRegs} array by just using an integer to save the number of memory accessing instructions. The reason to why the registers are recorded is that the best possible outcome would be if the registers were only used once or never, then it would not be enough if only the number of memory accessing instructions was used. For example a MEP containing 4 memory accessing instructions where all use different registers is better than a MEP containing only two memory accessing instructions where the same register is used twice.
 
+When instructions using SIB bytes or when interrupting instructions are present in a MEP it can not be used and another MEP must be chosen. If all of the best starting bytes generates MEPs with such instructions then the HEP must be changed in an attempt to overcome this problem. This is done by inserting a \emph{NOP} instruction as the first instruction in the HEP. \emph{NOP} is an instruction that has no effect on the processor other than increasing the program counter. In x86 it is implemented as an \texttt{xchg eax, eax} instruction which does nothing since \emph{xchg} is used to swap the values of two registers. When the \emph{NOP} has been inserted, the process of inserting starting bytes before the HEP is done all over with the original $3316228$ \texttt{Opcode} objects. This is repeated until a MEP without any interrupts or instructions using SIB bytes is found.
+
 
 \section{Memory access adjusment}
-Describe how this is done
+As mentioned before, instructions accessing memory in the MEP needs to be taken care of in order not to crash the program when the MEP is executed. Because there is very little control to be had over the MEP once the proper starting bytes have been choosed, the memory addresses being accessed by certain instructions cannot be changed. Since said addresses can be virtually any number in the range of \texttt{0x00000000 - 0xFFFFFFFF} the probability of a certain address being accessible without rendering a segmentation fault is very, very small and running a MEP without handling this in some way would most likely end up in a crash.  In order to change this behaviour and enable the MEP to run without crashing, the memory addresses that the instructions attempts to access needs to be adjusted for so that they may be accessed without crashing the program. 
+
+In the tool, this is implemented in a fairly simple manor. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
+
+\noindent When an instruction accessing memory has been found (that has not been adjusted for earlier), the adjustment works like this:
+\begin{enumerate}
+\item{Determine the register containing the address being accessed}
+\item{Make a note to allocate memory for the register}
+\item{Construct a LEA instruction loading the address of the allocated memory in to the register}
+\item{Place the LEA instruction in the \texttt{memoryAdjustment} vector}
+\item{If an offset is used before dereferencing the address, constuct and ADD or SUB instruction using the register and the offset}
+\item{Place the ADD or SUB instruction in the \texttt{memoryAdjustment} vector}
+\end{enumerate} 
+
+\noindent For example, if we have the following MEP:
+\begin{verbatim}
+add [ecx+0xbb80c46], eax
+\end{verbatim}  
+
+\noindent then we would end up with the following code:
+\begin{verbatim}
+section .data
+	dd ecxData 1 				# Allocating one double word with value 1 
+
+section .text
+
+memoryAdjusment:
+	lea ecx, [ecxData]			# Loading the address of ecxData into ecx
+	sub ecx, 0xbb80c46			# Compensating for the offset
+
+mep:
+	add [ecx+0xbb80c46], eax
+\end{verbatim}
+
+\noindent When the memory adjustment is done, in the best case scenario, the MEP is able to run and exit without crashing.
 
 \section{Swapping instructions}
-Describe swapping instructions
+In general it is hard to derive a good MEP from any given HEP and it gets harder and harder the longer the HEP is. In some cases it is hard to hide a HEP because it contains long instructions that breaks the MEP by syncing with the HEP. In others it is the sheer volume of the program making the MEP contain a lot of instructions accessing memory which makes the memory adjustment step very difficult. Thankfully, there are a lot of way to do the same thing in x86 which means that one or more instructions can be swapped for other instructions while still maintaining the behaviour of the program. What this means is that if a problematic instruction is found in the MEP, then the instruction in the HEP that spawned the problematic instruction can be swapped. That way the HEP maintains its behaviour and the MEP might get executable without crashing.
 
 \subsection{Swapping 32-bit mov instructions}
 How to swap 32-bit mov and why
