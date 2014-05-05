@@ -343,7 +343,7 @@ These different starting bytes are stored in a special object called \texttt{Opc
 
 After storage, the different starting bytes are inserted before the HEP and evaluated. The different results of the evaluation is stored in the \texttt{OpcodeMetaData} object coupled with the \texttt{Opcode} object. 
 
-\subsection{Looking at which starting bytes generate the longest MEP}
+\subsection{Looking for the longest MEP}
 The first step in the evaluation of the starting bytes is checking the number of instructions before the MEP syncrhonizes with the HEP. Since the goal is to hide as many instructions as possible, a higher number means a better HEP. The number is calculated for each of the starting bytes by comparing the last instruction in the MEP in the HEP, if they are equal, the last instruction in both execution paths is popped and the process is repeated until the instructions differ. The number of hidden instructions is calculated as follows:
 
 \begin{verbatim}
@@ -364,10 +364,8 @@ The SIB byte is used for index-based memory access. Firstly, all kinds of memory
 \subsubsection{Interrupts}
 The explanation for why interrupting instructions are undesireable in the MEP is simple, they interrup the execution of the program. \\
 
+\noindent Since memory access is a tricky problem to handle it is desired to have as few instructions accessing memory as possible. As a part of the ranking of starting bytes, the number of memory accessing instructions for each of the starting bytes is calculated and saved. The \texttt{OpcodeMetaData} object contains a \texttt{char usedRegs[]} array with eight elements, one for each register. To calculate the number of memory accessing instruction, the tool inserts each of the starting bytes before the HEP again an then loops through the generated MEP. When a memory accessing instruction is found, the register with the memory address being accessed is determined and the corresponding element in the \texttt{usedRegs} array is added by one. The number is then calculated by adding all the numbers in \texttt{usedRegs}. This could have been done without using the \texttt{usedRegs} array by just using an integer to save the number of memory accessing instructions. The reason to why the registers are recorded is that the best possible outcome would be if the registers were only used once or never, then it would not be enough if only the number of memory accessing instructions was used. For example a MEP containing 4 memory accessing instructions where all use different registers is better than a MEP containing only two memory accessing instructions where the same register is used twice.
 
-
-
-%\todo[inline]{Write about checking the number of instructions accessing memory and what registers they use}
 
 \section{Memory access adjusment}
 Describe how this is done
