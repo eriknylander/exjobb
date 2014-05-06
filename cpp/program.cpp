@@ -374,8 +374,8 @@ int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BY
 
 int main(int argc, char* argv[]) {
 
-	if(argc < 3) {
-		cerr << "Error. Usage: program <file path> <number of instructions>" << endl;
+	if(argc < 4) {
+		cerr << "Error. Usage: program <file path> <number of instructions> <Replace 32 bit mov or not>" << endl;
 		return 1;
 	}
 
@@ -397,7 +397,13 @@ int main(int argc, char* argv[]) {
 	vector<Instruction> hep;
 
 	e.doPreface(program, preface, hep);
-	//hep = e.optimizeHep(hep);
+
+	// Replace 32 bit mov or not
+	if(atoi(argv[3]) == 1) {
+		hep = e.optimizeHep(hep);
+	}
+
+
 	vector<pair<Opcode, OpcodeMetaData> > oldStartingBytes = startingBytes;
 
 	

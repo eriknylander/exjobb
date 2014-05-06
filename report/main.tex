@@ -303,12 +303,12 @@ Some instructions are very long, therefore they are difficult to hide. At the sa
 
 After the input file has been read and parsed, a function called \texttt{doPreface()} is called. This functions loops through the instructions and looks for certain kinds of instructions. If one is encountered, it is substituted for one instruction in the Preface part of the program and one instruction in the HEP. How this is done is different for different kinds of instructions.  
 
-\subsection{Workaround for LEA instructions}
+\subsection{Workaround for lea instructions}
 The \emph{Load Effective Address} instruction loads an address and places it in a register. For example: \texttt{lea eax, [somedata]} computes the address of the source operand \texttt{somedata} and stores it in the destination register, \texttt{eax} without actually accessing the memory. 
 
 If the address of \texttt{somedata} in the example above was \texttt{0x12345678}, the instruction would be encoded as follows: \texttt{8d 05 78 56 34 12}. This instruction is the 6 bytes long which can be hard to hide. 
 
-What happens in \texttt{doPreface()} when it encounters a similar LEA instructions is that it removes the instructions from the HEP. It then proceeds to add a LEA instruction with the same destination register but with the label of the data minus 1 as the source operand. After that, an ADD instruction adding 1 to the destination register of the LEA instruction is added to the HEP where the original LEA instruction was located. For example:
+What happens in \texttt{doPreface()} when it encounters a similar \emph{lea} instruction is that it removes the instructions from the HEP. It then proceeds to add a \emph{lea} instruction with the same destination register but with the label of the data minus 1 as the source operand. After that, an ADD instruction adding 1 to the destination register of the \emph{lea} instruction is added to the HEP where the original \emph{lea} instruction was located. For example:
 
 \begin{verbatim}
 lea eax, [somedata]
@@ -324,7 +324,7 @@ hep:
 	add eax, 1
 \end{verbatim}
 
-\noindent The result is that the program behaves like it did prior to the change but the HEP will be easier to hide while the LEA instruction and the data which address is loaded is somewhat hidden.
+\noindent The result is that the program behaves like it did prior to the change but the HEP will be easier to hide while the \emph{lea} instruction and the data which address is loaded is somewhat hidden.
 
 The use of a label yields a problem that also affects other parts of the tool. Since the input file is derived from a file written in assembly language, the labels are translated into memory addresses when the file is assembled and because the assembler file is assumed to be assembled without any headers to make the program runable, the address that the label is translated into will not be correct when the output from the tool is run. Because of this, all use of labels has to be done manually after the output has been generated before the obfuscated program can be run.
 
@@ -378,10 +378,10 @@ In the tool, this is implemented in a fairly simple manor. When the starting byt
 \begin{enumerate}
 \item{Determine the register containing the address being accessed}
 \item{Make a note to allocate memory for the register}
-\item{Construct a LEA instruction loading the address of the allocated memory in to the register}
-\item{Place the LEA instruction in the \texttt{memoryAdjustment} vector}
-\item{If an offset is used before dereferencing the address, constuct and ADD or SUB instruction using the register and the offset}
-\item{Place the ADD or SUB instruction in the \texttt{memoryAdjustment} vector}
+\item{Construct a \emph{lea} instruction loading the address of the allocated memory in to the register}
+\item{Place the \emph{lea} instruction in the \texttt{memoryAdjustment} vector}
+\item{If an offset is used before dereferencing the address, constuct an \emph{add} or \emph{sub} instruction using the register and the offset}
+\item{Place the \emph{add} or \emph{sub} instruction in the \texttt{memoryAdjustment} vector}
 \end{enumerate} 
 
 \noindent For example, if we have the following MEP:
@@ -410,8 +410,38 @@ mep:
 In general it is hard to derive a good MEP from any given HEP and it gets harder and harder the longer the HEP is. In some cases it is hard to hide a HEP because it contains long instructions that breaks the MEP by syncing with the HEP. In others it is the sheer volume of the program making the MEP contain a lot of instructions accessing memory which makes the memory adjustment step very difficult. Thankfully, there are a lot of way to do the same thing in x86 which means that one or more instructions can be swapped for other instructions while still maintaining the behaviour of the program. What this means is that if a problematic instruction is found in the MEP, then the instruction in the HEP that spawned the problematic instruction can be swapped. That way the HEP maintains its behaviour and the MEP might get executable without crashing.
 
 \subsection{Swapping 32-bit mov instructions}
-How to swap 32-bit mov and why
+The \emph{mov} instruction is used to move data between registers and memory, the possible combinations are listed below:
+\begin{itemize}
+\item{Register to Register}
+\item{Register to Memory}
+\item{Memory to Register}
+\item{Immediate value to Register}
+\item{Immediate value to Memory}
+\end{itemize}
 
+\noindent As seen above, it is not possible to move a value from one memory address to another using only one \emph{mov} instruction. When moving a 32 bit value to a register, the instruction length is five bytes which makes the \emph{mov} instruction almost as problematic as the \emph{lea} instructions. Since \emph{mov} is such a regular instruction being used constantly it needs to be handled in some way. There are many instructions which has the same or longer length but the reason for wanting to handle \emph{mov} is that it is often used when invoking Linux system calls\cite{syscall}. System calls are an important part of many programs, they can for example be used for starting other processes, open and write to files or listening to network ports. Needles to say, code invoking system calls is often code that would benefit from being hidden. 
+
+A system call is invoked by putting a system call number in \texttt{eax} and usually some parameters to the system call in the \texttt{ecx, edx, ebx} registers. The system call is then invoked by calling the kernel using an interrupt instruction(\texttt{int 0x80}). This is where the \emph{mov} instruction comes in to the picture. Because numbers are moved to a 32 bit register like \texttt{eax}, 32 bit \emph{mov} instructions are used. This is a problem since there is usually more than one \emph{mov} instruction in a row before the interrupt instruction. One could argue that the corresponding eight bit registers \texttt{al, cl, dl, bl} could be used to avoid moving 32 bit values. However, if there is any number larger than $0xFF$ in the register, the wrong value would reside in the 32 bit register after the eight bit move has been performed since only the least significant bits in the register is changed by the eight bit move.
+
+The way the tool handles 32 bit \emph{mov} instructions is by replacing them with two 16 bit \emph{mov} instructions and a bitwise left shift. The handling is performed like this:
+
+\begin{enumerate}
+\item{Move the 16 most significant bits of the 32 bit \emph{mov} instruction into the 16 bit corresponding register}
+\item{Shift the 32 bit register 16 steps to the left}
+\item{Move the 16 least significant bites of the 32 bit \emph{mov} instruction into the 16 corresponding register}
+\end{enumerate}	
+
+\noindent This way we end up with the same value in the register and get rid of the 32 bit \emph{mov}, replacing it with three instructions that are easier to handle. For example, consider the following instruction:
+\begin{verbatim}
+mov eax, 0x11112222
+\end{verbatim}
+
+\noindent After replacing this instruction we end up with the following instructions:
+\begin{verbatim}
+mov ax, 0x1111
+shl eax, 0x10
+mov ax, 0x2222
+\end{verbatim} 
 
 
 
