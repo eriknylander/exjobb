@@ -19,6 +19,6 @@ _start:
 
 	mov eax, 0xb
 	lea ebx, [esi]
-	lea ecx, [esi+8]
-	lea edx, [esi+12]
+	lea ecx, [esi+shellpathlen]
+	lea edx, [esi+shellpathlen+4]
 	int 0x80

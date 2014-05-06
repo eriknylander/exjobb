@@ -411,7 +411,7 @@ int main(int argc, char* argv[]) {
 	//printProgram(hepProgram);
 
 
-	printInstructions(hep);
+	//printInstructions(hep);
 
 	
 	//cout << "Got " << hep.size() << " instructions." << endl;

@@ -386,22 +386,22 @@ In the tool, this is implemented in a fairly simple manor. When the starting byt
 
 \noindent For example, if we have the following MEP:
 \begin{verbatim}
-add [ecx+0xbb80c46], eax
+    add [ecx+0xbb80c46], eax
 \end{verbatim}  
 
 \noindent then we would end up with the following code:
 \begin{verbatim}
 section .data
-	dd ecxData 1 				# Allocating one double word with value 1 
+    dd ecxData 1 				# Allocating one double word with value 1 
 
 section .text
 
 memoryAdjusment:
-	lea ecx, [ecxData]			# Loading the address of ecxData into ecx
-	sub ecx, 0xbb80c46			# Compensating for the offset
+    lea ecx, [ecxData]			# Loading the address of ecxData into ecx
+    sub ecx, 0xbb80c46			# Compensating for the offset
 
 mep:
-	add [ecx+0xbb80c46], eax
+    add [ecx+0xbb80c46], eax
 \end{verbatim}
 
 \noindent When the memory adjustment is done, in the best case scenario, the MEP is able to run and exit without crashing.
@@ -433,22 +433,65 @@ The way the tool handles 32 bit \emph{mov} instructions is by replacing them wit
 
 \noindent This way we end up with the same value in the register and get rid of the 32 bit \emph{mov}, replacing it with three instructions that are easier to handle. For example, consider the following instruction:
 \begin{verbatim}
-mov eax, 0x11112222
+    mov eax, 0x11112222
 \end{verbatim}
 
 \noindent After replacing this instruction we end up with the following instructions:
 \begin{verbatim}
-mov ax, 0x1111
-shl eax, 0x10
-mov ax, 0x2222
+    mov ax, 0x1111
+    shl eax, 0x10
+    mov ax, 0x2222
 \end{verbatim} 
 
 
-
-
-
-
 \chapter{Result}
+\section{Test programs}
+To test the tool, two different test programs were written to be used as input for the tool. The two test programs are desribed below.
+
+\subsection{launchshell}
+The functionality of the \texttt{launchshell} program is to open a shell when the program is run. This is done by making a Linux system call called \texttt{sys\_execve} which will execute the program specified by the parameters passed to the system call. The entire program written in assembly language is presented and explained below:
+
+\begin{verbatim}
+BITS 32
+
+section .data
+    shellpath: db "/bin/sh",0
+    shellpathlen: equ $-shellpath
+\end{verbatim}
+
+\noindent The first part of the program is the \emph{data section}. Here the string \texttt{shellpath} is allocated and populated with the path to the shell that will be opened. Second, the \texttt{shellpathlen} is allocated and the length of \texttt{shellpath} is places in it. 
+
+\begin{verbatim}
+section .text
+    global _start
+
+_start:
+
+    lea esi, [shellpath]
+    xor eax, eax
+
+    mov dword [esi+shellpathlen], esi
+    mov dword [esi+shellpathlen+4], eax 
+
+\end{verbatim}
+
+\noindent Next is the \emph{text section} which contains the executable code. First, the address of the first byte in the \texttt{shellpath} string is loaded into the \emph{esi} register with the \emph{lea} instruction, second, \texttt{xor eax, eax} will effectively replace any value residing in \emph{eax} with zero,vthis will be used later. 
+
+The next two instructions will be used when passing parameters to \texttt{sys\_execve}. The first instruction will place the address of the \texttt{shellpath} string directly after the string itself. The second instruction will place the value of \emph{eax}, namely zero directly after the address in the previous instructions in memory. These use of these two instructions might seem strange but there is a good explaination which will be presented shortly.
+
+\begin{verbatim}
+    mov eax, 0xb
+    lea ebx, [esi]
+    lea ecx, [esi+shellpathlen]
+    lea edx, [esi+shellpathlen+4]
+    int 0x80
+\end{verbatim}
+
+\noindent The final part of the program is the system call. First, the number $0xb$ is placed in \emph{eax}. This is the number identifying \texttt{sys\_execve}. Then the address of the \texttt{shellpath} string is placed in \emph{ebx}. The next step is where the seemingly strange two instructions are explained. \texttt{sys\_execve} takes three parameters, the first one is a pointer to a string containing the path of the program to be started, the second one is a pointer to an array containing arguments to the program being started, by convention, the first argument is the path to the program itself which is why the address of the \texttt{shellpath} string was placed after the string in memory. The next \emph{lea} instruction places the address of the argument in \emph{ecx}. 
+
+The third parameter to \texttt{sys\_execve} is an array of strings which are passed as environment to the executed program. In this case, this parameter is not needed which is why a zero was placed after the argument array in memory. The last \emph{lea} instruction places the address of the zero in the \emph{edx} register.
+
+Lastly the system call is invoked by the interrupt instruction.
 
 \chapter{Discussion and further development}
 

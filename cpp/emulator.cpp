@@ -331,7 +331,7 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	newBytes.insert(newBytes.begin()+3, a2);
 
 	getInstruction(newBytes, newIns);
-	newIns.printInstruction();
+	//newIns.printInstruction();
 
 	ret.push_back(newIns);
 
@@ -345,7 +345,7 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	newBytes.push_back(0x10);
 
 	getInstruction(newBytes, newIns);
-	newIns.printInstruction();
+	//newIns.printInstruction();
 
 
 	ret.push_back(newIns);
@@ -359,7 +359,7 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	newBytes.insert(newBytes.begin()+3, a4);
 
 	getInstruction(newBytes, newIns);
-	newIns.printInstruction();
+	//newIns.printInstruction();
 
 	ret.push_back(newIns);
 
