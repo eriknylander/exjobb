@@ -43,7 +43,10 @@ int Parser::parseUntilInvalid(vector<BYTE> buffer) {
   while (ud_disassemble(&ud_obj)) {
     int bytesRead = ud_insn_len(&ud_obj);
 
-    if(strcmp(ud_insn_asm(&ud_obj), "invalid") == 0)
+    string assembler = ud_insn_asm(&ud_obj);
+    size_t found = assembler.find("invalid");
+
+    if(found != string::npos)
       break;
 
     //printf("%s\t%s\n", ud_insn_hex(&ud_obj), ud_insn_asm(&ud_obj));

@@ -10,6 +10,7 @@ section .text
 global _start
 
 _start:
+	nop
 	mov eax, 0x5
 	mov ebx, filetoopen
 	mov ecx, 0x2

@@ -499,14 +499,17 @@ int main(int argc, char* argv[]) {
 	e.loadProgramInMemory(mepProgram);
 	vector<Instruction> mep = e.getInstructionVector();
 
-	
+	printInstructions(mep);
+
+	cout << bestStartingOpcode.getOpcodeString();
+	printf("Which has %d bytes\n", bestStartingOpcode.getOpcodeSize());
 
 	vector<Instruction> memoryAdjustment;
 	e.adjustForMemoryAccess(memoryAdjustment, mep);
 
 	p.parseAndPrintPreface(getBytesFromInstructions(preface)); 
 	p.parseAndPrintMemoryAdjustment(getBytesFromInstructions(memoryAdjustment)); 
-	p.parseAndPrintProgram(getBytesFromInstructions(mep), bestStartingOpcode.bytes.size(), 0);
+	p.parseAndPrintProgram(getBytesFromInstructions(mep), bestStartingOpcode.getOpcodeSize(), 0);
 	p.printProgramReturn();
 	
 	

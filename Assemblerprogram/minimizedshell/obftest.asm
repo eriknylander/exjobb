@@ -25,7 +25,7 @@ push ebp
 lea ebp, [ebpData]
 sub ebp, 0x84e8d1e
 
-;jmp hep+0x2
+jmp hep+0x2
 
 hep:
 test word [ebx-0x3fcefe3a], 0x7689

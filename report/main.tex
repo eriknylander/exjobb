@@ -564,12 +564,13 @@ The following will be presented in the result:
 \end{description}
 
 \subsection{Results for \texttt{launchshell}}
+The results for the two runs with \texttt{launchshell} as input is presented in table \ref{table:resultslaunchshell}.
 
 \begin{table}[h]
-\scalebox{0.8}{
+\scalebox{0.9}{
 \begin{tabular}{c c c c}
 mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
-Yes & 55.6 & no & no \\
+Yes & 55.6 & yes & no \\
 No & 77.8 & yes & yes \\
 \end{tabular}}
 
@@ -577,19 +578,30 @@ No & 77.8 & yes & yes \\
 \label{table:resultslaunchshell}
 \end{table}
 
-
-\subsubsection{With substitution of 32 bit \emph{mov}}
-lala
-\subsubsection{Without substitution of 32 bit \emph{mov}}
-lala
-
 \subsection{Results for \texttt{writetofile}}
-\subsubsection{With substitution of 32 bit \emph{mov}}
-lala
-\subsubsection{Without substitution of 32 bit \emph{mov}}
-lala
+
+\begin{table}
+\scalebox{0.8}{
+\begin{tabular}{c c c c}
+mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
+yes & 14.3 & - & - \\
+No & 21.4 & no & no \\
+\end{tabular}}
+
+\caption{Results for \texttt{writetofile}}
+\label{table:resultswritetofile}
+\end{table}
+
+
+write about jecxz error, udis/nasm disagreement, jumps and why they don't work, memory adjustment with more than 1 instruction accessing the same register blablabla. Further development: smarter picking of startingbytes. More than one hep is the sync number is low. Better, more advanced substitution of instructions. Smarter more thorough memory adjustment. Potentially, a memory allocation label could be used between MEPs. Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic disassemblers.
+
 
 \chapter{Discussion and further development}
+\section{\texttt{launchshell}}
+
+
+
+\section{texttt{writetofile}}
 
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
