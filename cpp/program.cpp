@@ -404,7 +404,6 @@ int main(int argc, char* argv[]) {
 	}
 
 
-
 	vector<pair<Opcode, OpcodeMetaData> > oldStartingBytes = startingBytes;
 
 	

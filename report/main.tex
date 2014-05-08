@@ -553,7 +553,15 @@ These two instructions are meant to serve as error handling. The first instructi
 \noindent The last instructions invoke the \texttt{sys\_exit} system call which will terminate the current process. 
 
 \section{Running the tool}
-When both of the test programs had been written and tested they were assembled without any headers to make them runnable using \texttt{nasm}\cite{nasm} which is an x86 assembler. The tool was then run twice with each of the test programs as input, once with the substitution of 32 bit \emph{mov} instructions and once without it. Once the tool was finished, the output was copied into an assembly file and the manual allocation of data and the manual part of the memory adjustment was done. After that, both the HEP and the MEP were executed to see if the HEP had the intended behaviour and if the MEP executed without crashing. The results of the runs will be presented and explained below.
+When both of the test programs had been written and tested they were assembled without any headers to make them runnable using \texttt{nasm}\cite{nasm} which is an x86 assembler. The tool was then run twice with each of the test programs as input, once with the substitution of 32 bit \emph{mov} instructions and once without it. Once the tool was finished, the output was copied into an assembly file and the manual allocation of data and the manual part of the memory adjustment was done. After that, both the HEP and the MEP were executed to see if the HEP had the intended behaviour and if the MEP executed without crashing.
+
+The following will be presented in the result:
+\begin{description}
+\item[mov substitution] This field shows if the tool was run with 32 bit \emph{mov} substitution or not
+\item[Instructions hidden] This field shows the percentage of instructions in the input program that were hidden by the tool. Calculated by dividing the number of instructions in the input program not shown in the ouput by the total number of instructions in the input program.
+\item[HEP functional] This field shows if the HEP is functional when the output from the tool is run.
+\item[MEP functional] This field shows if the MEP runs without crashing.
+\end{description}
 
 \subsection{Results for \texttt{launchshell}}
 
@@ -561,9 +569,10 @@ When both of the test programs had been written and tested they were assembled w
 \scalebox{0.8}{
 \begin{tabular}{c c c c}
 mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
-Yes & 44.4 & no & no \\
+Yes & 55.6 & no & no \\
 No & 77.8 & yes & yes \\
 \end{tabular}}
+
 \caption{Results for \texttt{launchshell}}
 \label{table:resultslaunchshell}
 \end{table}

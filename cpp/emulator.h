@@ -37,6 +37,7 @@ private:
 	struct emu_memory *mem;
 	int static_offset;
 	std::vector<unsigned char> m_memory;
+	char usedRegs[8];
 };
 
 #endif

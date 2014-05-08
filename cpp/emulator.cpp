@@ -10,6 +10,10 @@ Emulator::Emulator()
 	mem = emu_memory_get(e);
 	emu_log_level_set(emu_logging_get(e), EMU_LOG_DEBUG);
 	static_offset = 4711;
+
+	for(int i = 0; i < 8; i++) {
+		usedRegs[i] = 0;
+	}
 }
 
 Emulator::~Emulator() 
@@ -137,6 +141,9 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	// Add lea to preface
 	vector<unsigned char> bytes = ins.getBytes();
 
+	// Make note that this register has been adjusted for
+	usedRegs[ins.getInstruction().cpu.modrm.opc]++;
+
 	unsigned int immediate = 0;
 	int shifter = 3*8;
 
@@ -191,7 +198,7 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 
 void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vector<Instruction> &mep)
 {
-	char usedRegs[8] = { };
+	
 
 	bool pushedESP = false;
 	bool pushedEBP = false;
@@ -306,7 +313,7 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 
 	emu_instruction ins = a.getInstruction();
 	emu_cpu_instruction_info info = a.getInstructionInfo();
-
+	a.printInstruction();
 	unsigned char reg = ins.cpu.opc - 0xb8;
 
 	vector<unsigned char> newBytes;
@@ -326,11 +333,11 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	unsigned char a1 = aBytes.back();
 	aBytes.pop_back();
 
-	newBytes.insert(newBytes.begin()+2, a1);
-	newBytes.insert(newBytes.begin()+3, a2);
+	newBytes.insert(newBytes.begin()+2, a3);
+	newBytes.insert(newBytes.begin()+3, a4);
 
 	getInstruction(newBytes, newIns);
-	//newIns.printInstruction();
+	newIns.printInstruction();
 
 	ret.push_back(newIns);
 
@@ -344,7 +351,7 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	newBytes.push_back(0x10);
 
 	getInstruction(newBytes, newIns);
-	//newIns.printInstruction();
+	newIns.printInstruction();
 
 
 	ret.push_back(newIns);
@@ -354,11 +361,11 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	newBytes.push_back(0x66);
 	newBytes.push_back(ins.cpu.opc);
 	
-	newBytes.insert(newBytes.begin()+2, a3);
-	newBytes.insert(newBytes.begin()+3, a4);
+	newBytes.insert(newBytes.begin()+2, a1);
+	newBytes.insert(newBytes.begin()+3, a2);
 
 	getInstruction(newBytes, newIns);
-	//newIns.printInstruction();
+	newIns.printInstruction();
 
 	ret.push_back(newIns);
 
