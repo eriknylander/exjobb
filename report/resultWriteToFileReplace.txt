@@ -1,0 +1,98 @@
+b805000000
+66b80000
+c1e010
+66b80500
+bb46000000
+66bb0000
+c1e310
+66bb4600
+b902000000
+66b90000
+c1e110
+66b90200
+b804000000
+66b80000
+c1e010
+66b80400
+b940000000
+66b90000
+c1e110
+66b94000
+ba06000000
+66ba0000
+c1e210
+66ba0600
+b801000000
+66b80000
+c1e010
+66b80100
+bb00000000
+66bb0000
+c1e310
+66bb0000
+Checking for best sync conditions
+Done checking sync conditions
+Removing startingBytes with bad sync number
+Size of goodStartingBytes = 1551345
+Done removing startingBytes
+maxSyncedAfter = 6
+90 66 b8 00 00 c1 e0 10 66 b8 05 00 66 bb 00 00 c1 e3 10 66 bb 46 00 66 b9 00 00 c1 e1 10 66 b9 02 00 cd 80 83 f8 00 0f 8c f8 ff ff ff 89 c3 66 b8 00 00 c1 e0 10 66 b8 04 00 66 b9 00 00 c1 e1 10 66 b9 40 00 66 ba 00 00 c1 e2 10 66 ba 06 00 cd 80 66 b8 00 00 c1 e0 10 66 b8 01 00 66 bb 00 00 c1 e3 10 66 bb 00 00 
+Calculating recurring registers and usage of sib bytes
+startingBytes.size() = 1527102
+[f787ff9066b80000c1e0][1066b8][050066bb00][00c1][e310][66bb4600][66b90000][c1e110][66b90200][cd80][83f800][0f8cf8ffffff][89c3][66b80000][c1e010][66b80400][66b90000][c1e110][66b94000][66ba0000][c1e210][66ba0600][cd80][66b80000][c1e010][66b80100][66bb0000][c1e310][66bb0000]
+f787ffWhich has 3 bytes
+PROGRAM!!!
+
+BITS 32
+section .data
+;ALLOCATE DATA HERE
+;Don't forget data for memory access adjustment
+section .text
+	global _start
+_start:
+;preface
+
+;Change 0xdeadc0de to 'label - 1'
+
+;Memory adjustment stuff (Change 0xdeadc0de to according memory access adjusment label)
+lea edi, [0xdeadc0de]
+add edi, 0x47996f01
+lea esi, [0xdeadc0de]
+add esi, 0x48
+
+jmp mep0 + 0x3
+
+;mep
+mep0:
+test dword [edi-0x47996f01], 0xe0c10000
+adc [esi-0x48], ah
+add eax, 0xbb6600
+add cl, al
+jecxz 0x28c31de8
+mov bx, 0x46
+mov cx, 0x0
+shl ecx, 0x10
+mov cx, 0x2
+int 0x80
+cmp eax, 0x0
+jl 0x28c31dea
+mov ebx, eax
+mov ax, 0x0
+shl eax, 0x10
+mov ax, 0x4
+mov cx, 0x0
+shl ecx, 0x10
+mov cx, 0x40
+mov dx, 0x0
+shl edx, 0x10
+mov dx, 0x6
+int 0x80
+mov ax, 0x0
+shl eax, 0x10
+mov ax, 0x1
+mov bx, 0x0
+shl ebx, 0x10
+mov bx, 0x0
+mov eax, 1
+mov ebx, 0
+int 0x80

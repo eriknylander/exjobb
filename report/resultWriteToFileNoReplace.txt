@@ -1,0 +1,62 @@
+Checking for best sync conditions
+Done checking sync conditions
+Removing startingBytes with bad sync number
+Size of goodStartingBytes = 303597
+Done removing startingBytes
+maxSyncedAfter = 3
+b8 05 00 00 00 bb 46 00 00 00 b9 02 00 00 00 cd 80 83 f8 00 0f 8c f9 ff ff ff 89 c3 b8 04 00 00 00 b9 40 00 00 00 ba 06 00 00 00 cd 80 b8 01 00 00 00 bb 00 00 00 00 cd 80 
+Calculating recurring registers and usage of sib bytes
+Checking for best sync conditions
+Done checking sync conditions
+Removing startingBytes with bad sync number
+Size of goodStartingBytes = 1555586
+Done removing startingBytes
+maxSyncedAfter = 3
+b8 05 00 00 00 bb 46 00 00 00 b9 02 00 00 00 cd 80 83 f8 00 0f 8c f9 ff ff ff 89 c3 b8 04 00 00 00 b9 40 00 00 00 ba 06 00 00 00 cd 80 b8 01 00 00 00 bb 00 00 00 00 cd 80 
+Calculating recurring registers and usage of sib bytes
+startingBytes.size() = 1531615
+[f787ff90b805000000bb][46][0000][00b902000000][cd80][83f800][0f8cf9ffffff][89c3][b804000000][b940000000][ba06000000][cd80][b801000000][bb00000000][cd80]
+f787ffWhich has 3 bytes
+PROGRAM!!!
+
+BITS 32
+section .data
+;ALLOCATE DATA HERE
+;Don't forget data for memory access adjustment
+section .text
+	global _start
+_start:
+;preface
+
+;Change 0xdeadc0de to 'label - 1'
+
+;Memory adjustment stuff (Change 0xdeadc0de to according memory access adjusment label)
+lea edi, [0xdeadc0de]
+sub edi, 0x5b890ff
+lea eax, [0xdeadc0de]
+sub eax, 0x0
+lea ecx, [0xdeadc0de]
+sub ecx, 0x2
+
+jmp mep0 + 0x3
+
+;mep
+mep0:
+test dword [edi+0x5b890ff], 0xbb000000
+inc esi
+add [eax], al
+add [ecx+0x2], bh
+int 0x80
+cmp eax, 0x0
+jl 0x2d6d57e9
+mov ebx, eax
+mov eax, 0x4
+mov ecx, 0x40
+mov edx, 0x6
+int 0x80
+mov eax, 0x1
+mov ebx, 0x0
+int 0x80
+mov eax, 1
+mov ebx, 0
+int 0x80

