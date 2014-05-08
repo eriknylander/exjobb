@@ -304,7 +304,6 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vect
 vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	vector<Instruction> ret;
 
-
 	emu_instruction ins = a.getInstruction();
 	emu_cpu_instruction_info info = a.getInstructionInfo();
 
@@ -378,9 +377,11 @@ vector<Instruction> Emulator::optimizeHep(vector<Instruction> hep) {
 			//Substitute long mov instruction
 			vector<Instruction> newInstructions = substituteMov(*itr);
 			retVector.insert(retVector.end(), newInstructions.begin(), newInstructions.end());
+		} else {
+			retVector.push_back(*itr);
 		}
 
-		retVector.push_back(*itr);
+		
 	}
 
 	return retVector;

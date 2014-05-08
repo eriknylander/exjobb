@@ -19,6 +19,7 @@
 \usepackage{cite}
 \usepackage{url}
 \usepackage{todonotes}
+\usepackage{graphicx}
 
 \bibliographystyle{alpha}
 \unitlength=1mm
@@ -198,7 +199,7 @@ label:
 xor eax, 0x12345678     35 78 56 34 12
 int 0x80                cd 80
 \end{verbatim}
-\noindent After assembling the code above and then using the GNU Assembler \emph{objdump}\cite{objdump} on it we see that the linear sweep algorithm produces the following code:
+\noindent After assembling the code above and then using the GNU Assembler \texttt{objdump}\cite{objdump} on it we see that the linear sweep algorithm produces the following code:
 
 \begin{verbatim}
 $ objdump -D -b binary -mi386 -M intel example.o
@@ -344,7 +345,7 @@ These different starting bytes are stored in a special object called \texttt{Opc
 After storage, the different starting bytes are inserted before the HEP and evaluated. The different results of the evaluation is stored in the \texttt{OpcodeMetaData} object coupled with the \texttt{Opcode} object. 
 
 \subsection{Looking for the longest MEP}
-The first step in the evaluation of the starting bytes is checking the number of instructions before the MEP syncrhonizes with the HEP. Since the goal is to hide as many instructions as possible, a higher number means a better HEP. The number is calculated for each of the starting bytes by comparing the last instruction in the MEP in the HEP, if they are equal, the last instruction in both execution paths is popped and the process is repeated until the instructions differ. The number of hidden instructions is calculated as follows:
+The first step in the evaluation of the starting bytes is checking the number of instructions before the MEP synchronizes with the HEP. Since the goal is to hide as many instructions as possible, a higher number means a better HEP. The number is calculated for each of the starting bytes by comparing the last instruction in the MEP in the HEP, if they are equal, the last instruction in both execution paths is popped and the process is repeated until the instructions differ. The number of hidden instructions is calculated as follows:
 
 \begin{verbatim}
     Sync number = HEP size - number of equal instructions
@@ -372,7 +373,7 @@ When instructions using SIB bytes or when interrupting instructions are present 
 \section{Memory access adjusment}
 As mentioned before, instructions accessing memory in the MEP needs to be taken care of in order not to crash the program when the MEP is executed. Because there is very little control to be had over the MEP once the proper starting bytes have been choosed, the memory addresses being accessed by certain instructions cannot be changed. Since said addresses can be virtually any number in the range of \texttt{0x00000000 - 0xFFFFFFFF} the probability of a certain address being accessible without rendering a segmentation fault is very, very small and running a MEP without handling this in some way would most likely end up in a crash.  In order to change this behaviour and enable the MEP to run without crashing, the memory addresses that the instructions attempts to access needs to be adjusted for so that they may be accessed without crashing the program. 
 
-In the tool, this is implemented in a fairly simple manor. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
+In the tool, this is implemented in a fairly simple manor. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector<Instruction>}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
 
 \noindent When an instruction accessing memory has been found (that has not been adjusted for earlier), the adjustment works like this:
 \begin{enumerate}
@@ -443,6 +444,7 @@ The way the tool handles 32 bit \emph{mov} instructions is by replacing them wit
     mov ax, 0x2222
 \end{verbatim} 
 
+\noindent Since it is not always beneficial to replace every 32 bit \emph{mov} instruction, it is optional for the tool to make the substitution or not. Whether or not the substitution shall be made is decided based upon an argument to the tool.
 
 \chapter{Result}
 \section{Test programs}
@@ -459,7 +461,7 @@ section .data
     shellpathlen: equ $-shellpath
 \end{verbatim}
 
-\noindent The first part of the program is the \emph{data section}. Here the string \texttt{shellpath} is allocated and populated with the path to the shell that will be opened. Second, the \texttt{shellpathlen} is allocated and the length of \texttt{shellpath} is places in it. 
+\noindent The first part of the program is the \emph{data section}. Here the string \texttt{shellpath} is allocated and populated with the path to the shell that will be opened. Second, the \texttt{shellpathlen} is allocated and the length of \texttt{shellpath} is placed in it. 
 
 \begin{verbatim}
 section .text
@@ -492,6 +494,91 @@ The next two instructions will be used when passing parameters to \texttt{sys\_e
 The third parameter to \texttt{sys\_execve} is an array of strings which are passed as environment to the executed program. In this case, this parameter is not needed which is why a zero was placed after the argument array in memory. The last \emph{lea} instruction places the address of the zero in the \emph{edx} register.
 
 Lastly the system call is invoked by the interrupt instruction.
+Why do I want to do this???
+
+
+\subsection{writetofile}
+The next program is called \texttt{writetofile} and like the name suggests, it's functionality is to write data to a file. To do this, two different system calls are used, \texttt{sys\_open} and \texttt{sys\_write}. \texttt{sys\_open} will open a file (or create one provided that certain parameters are used) while \texttt{sys\_write} will write to an open file if permitted. The program is explained below:
+
+\begin{verbatim}
+BITS 32
+
+section .data
+    textoutput: db 'Hello', 10
+    textoutputlen: equ $-textoutput
+    filetoopen: db 'hello.txt', 0
+\end{verbatim}
+
+\noindent Just like in \texttt{launshell} the first part of the program is dedicated to allocate data. In this program there are three variables allocated, \texttt{textoutput} which is the string that will be written to the file, \texttt{textoutputlen} which is the length of that string and lastly \texttt{filetoopen} which contains the path to the file.
+
+\begin{verbatim}
+section .text
+global _start
+
+_start:
+    mov eax, 0x5
+    mov ebx, filetoopen
+    mov ecx, 0x2
+    int 0x80
+\end{verbatim}
+
+\noindent The next part of the program is responsible for opening the file. The first instruction moves the number $0x5$ which is the number for \texttt{sys\_open} to \emph{eax}. The second instruction places the address of the \texttt{filetoopen} string in \emph{ebx}. The third instruction the value $0x2$ is placed in \emph{ecx}. This value determines that the file is opened with read and write permissions. Lastly, the system call is invoked by the interrupt instruction.
+
+\begin{verbatim}
+    cmp eax, 0
+    jl exit
+\end{verbatim}
+
+\noindent When the \texttt{sys\_open} system call has been invoked, the result of the system call is placed in \emph{eax}. If the file does not exist, a negative number is placed in \emph{eax} and if it does exist, the address of the file descriptor is placed in \emph{eax}. 
+ 
+These two instructions are meant to serve as error handling. The first instruction compares if the value in \emph{eax} is bigger than zero and the result of the compared is saved in the \emph{eflags} register. The second instruction then checks the \emph{eflags} register to examine the result, if the value was smaller than zero, the execution will jump to the \texttt{exit} label. Otherwise the execution continues.
+
+\begin{verbatim}
+    mov ebx, eax
+    mov eax, 0x4
+    mov ecx, textoutput
+    mov edx, textoutputlen
+    int 0x80
+\end{verbatim}
+
+\noindent If \texttt{sys\_open} system call was successful, it is now time to write to the file. For this, the system call \texttt{sys\_write} will be used. The first instruction moves the value in \emph{eax} to \emph{ebx}. This is because the address of the file descriptor returned by \texttt{sys\_open} was saved in \emph{eax} and since \emph{eax} is where the system call number is saved, the address of the file descriptor must be moved to \emph{ebx} before the system call number is moved to \emph{eax}. The second instruction does just that. The third and fourth instructions places the address of the \texttt{textoutput} string in \emph{ecx} and the length of the string in \emph{edx}. Lastly the system call is invoked by the interrupt instruction and the string ``hello'' is written to the file.
+
+\begin{verbatim}
+ exit:
+    mov eax, 1
+    mov ebx, 0	
+    int 0x80
+\end{verbatim}
+
+\noindent The last instructions invoke the \texttt{sys\_exit} system call which will terminate the current process. 
+
+\section{Running the tool}
+When both of the test programs had been written and tested they were assembled without any headers to make them runnable using \texttt{nasm}\cite{nasm} which is an x86 assembler. The tool was then run twice with each of the test programs as input, once with the substitution of 32 bit \emph{mov} instructions and once without it. Once the tool was finished, the output was copied into an assembly file and the manual allocation of data and the manual part of the memory adjustment was done. After that, both the HEP and the MEP were executed to see if the HEP had the intended behaviour and if the MEP executed without crashing. The results of the runs will be presented and explained below.
+
+\subsection{Results for \texttt{launchshell}}
+
+\begin{table}[h]
+\scalebox{0.8}{
+\begin{tabular}{c c c c}
+mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
+Yes & 44.4 & no & no \\
+No & 77.8 & yes & yes \\
+\end{tabular}}
+\caption{Results for \texttt{launchshell}}
+\label{table:resultslaunchshell}
+\end{table}
+
+
+\subsubsection{With substitution of 32 bit \emph{mov}}
+lala
+\subsubsection{Without substitution of 32 bit \emph{mov}}
+lala
+
+\subsection{Results for \texttt{writetofile}}
+\subsubsection{With substitution of 32 bit \emph{mov}}
+lala
+\subsubsection{Without substitution of 32 bit \emph{mov}}
+lala
 
 \chapter{Discussion and further development}
 
