@@ -48,13 +48,23 @@ abstract. The abstract. The abstract. The abstract.
 \tableofcontents
 %\cleardoublepage
 %\listoffigures
-%\listoftables
+\listoftables
 \cleardoublepage
 %%%%% Page numbering for the main thesis
 \mainmatter
 %%%%%
 
 \chapter{Introduction}
+The software buisness is a very competitive field because it is very lucrative in this day and age. In order to generate the biggest revenue, a software company must provide software that goes beyond what products from other companies are doing. To do so, the source code must be exclusive and only known by people inside the company. The alternative is to have source code that is public domain but provide a service to use the code with that no other company can provide. 
+
+Today it is not sufficient to worry about other companies stealing or copying code, hackers and piracy is a big problem. It is also not sufficient to keep the source code secret only during the development. When a program is ready for release it is built and packaged and the source code is never made public in clear text. However, when a program is released, the built source code is contained in the executable binaries. These binaries are vulnerable because an adversary can use different kinds of disassemblers to go from the binary hexadecimal codes to assembly code. When the assembly code is made visible to the adversery, it can be analyzed and exploited. 
+
+After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key is calculated and then write a license key generator that produces a seemingly legitimate serial key and release it to the public so that anyone can use the program without buying it, causing a loss in revenue for the developer.
+
+Anti-disassembly is the art of making a program difficult to disassemble. By utilizing different techniques, a program can be modified so that a disassembler produces erroneus output or no output at all. Several anti-disassembly techniques have been developed and used over the years but the search for better techniques goes on. 
+
+This thesis aims to investigate the use and possibilities of one such technique called \emph{Instruction overlapping}. \emph{Instruction overlapping} exploits the variable length of instructions in the x86 architecture and attempts to hide code inside other code to make a disassembler produce faulty output  while still maintaining the correct behaviour when the program is run. To investigate the practical uses of this technique, a tool will be implemented and tested to determine if \emph{Instruction overlapping} is a viable option for anti-disassembly and also how difficult such a tool would be to implement.
+
 
 \chapter{Background}
 \section{CISC}
@@ -119,8 +129,9 @@ Prefix & Opcode & Mod-Reg-R/M & SIB & Displacement & Immediate \\ \hline
 \end{description}
 
 \subsubsection{The Mod-Reg-R/M byte}
-The Mod-Reg-R/M byte consist of three groups of bits that together determines what kind of data that the instruction is accessing. These groups are explained below:\\
+The Mod-Reg-R/M byte consist of three groups of bits that together determines what kind of data that the instruction is accessing, see Table \ref{table:modregrmbyte}. These groups are explained below:\\
 
+\begin{table}[h]
 \begin{tabular}{|l|l|l|}
 \hline
 Mod & Reg & R/M \\
@@ -128,7 +139,10 @@ Mod & Reg & R/M \\
 2 bits & 3 bits & 3 bits \\
 \hline
 \end{tabular}
-\\\\
+\caption{Format of the Mod-Reg-R/M byte}
+\label{table:modregrmbyte}
+\end{table}
+
 
 \noindent \uline{Mod}\\
 The two \emph{Mod} bits determines if the instruction shall access memory at an address stored in a register and also if a displacement shall be added to the address.\\
@@ -147,9 +161,10 @@ The \emph{Reg} field will denote a register: \\ 000 - eax, 001 - ecx, 010 - edx,
 The \emph{R/M} field will denote a register just like the reg field. It also denotes the register from which an address will be dereferenced. There are two exceptions to this, namely if the mod bits are 00 and if the r/m bits are 100, then the SIB byte will be used when accessing memory or when the r/m bits are 101, then a displacement value will be dereferenced instead.
 
 \subsubsection{The SIB byte}
-The SIB byte like the Mod-Reg-R/M byte also contains three fields of bits called \emph{Scale}, \emph{Index} and \emph{Base}. As mentioned before, this byte enables index-based memory access. When the SIB byte is used, the address being accessed will be calculated as follows:
+The SIB byte like the Mod-Reg-R/M byte also contains three fields of bits called \emph{Scale}, \emph{Index} and \emph{Base}, see Table \ref{table:sibbyte}. As mentioned before, this byte enables index-based memory access. When the SIB byte is used, the address being accessed will be calculated as follows:
 $Base + Scale*Index$. The fields in the SIB byte will be explained below:\\
 
+\begin{table}[h]
 \begin{tabular}{|l|l|l|}
 \hline
 Scale & Index & Base \\
@@ -157,10 +172,13 @@ Scale & Index & Base \\
 2 bits & 3 bits & 3 bits \\
 \hline
 \end{tabular}
-\\\\
+\caption{Format of the SIB byte}
+\label{table:sibbyte}
+\end{table}
+
 
 \noindent \uline{Scale}\\
-The two \emph{Scale} bits determines what value that the \emph{Index} value will be multiplied with.\\
+The two \emph{Scale} bits determines what value the \emph{Index} value will be multiplied with.\\
 \begin{description}
 \item[00] \emph{Index} will be multiplied by 1.  
 \item[01] \emph{Index} will be multiplied by 2.
@@ -208,7 +226,7 @@ $ objdump -D -b binary -mi386 -M intel example.o
    8:	cd 80                	int    0x80
 \end{verbatim}
 
-\noindent Here it is very clear that the linear sweep algorithm in \emph{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \emph{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
+\noindent Here it is very clear that the linear sweep algorithm in \texttt{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \emph{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
 
 \subsubsection{Opaque predicates}
 Opaque predicates is a technique used to fool recursive traversal disassemblers and can be used together with junk byte insertion. The idea is to convert unconditional jump instructions in to conditional jump instructions but make it so that the jump is always taken at runtime. This forces the recursive traversal algorithm to consider both the target as well as the next instruction after the jump. By placing junk bytes directly after the jump instruction, the disassembler can be tricked into producing erroneous code.\cite{instructionoverlapping}
@@ -286,7 +304,7 @@ The intended input for the tool is a file containing the bytes representing an a
 The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjusment part, former two will be explained further on.
 
 \section{Parsing and representing a program}
-In order to perform operations on a program it needs to be parsed and represented in some way. This part is done in two steps in the tool, first the input file is read and the bytes are stored in a \emph{vector}, then the bytes are parsed and stored in \emph{Instruction} objects. 
+In order to perform operations on a program it needs to be parsed and represented in some way. This part is done in two steps in the tool, first the input file is read and the bytes are stored in a \texttt{vector}, then the bytes are parsed and stored in \texttt{Instruction} objects. 
 
 Since the parsing and representation of x86 instructions would be very time consuming to implement, two different third party C libraries were used, Udis86 and Libemu. 
 
@@ -305,7 +323,7 @@ Some instructions are very long, therefore they are difficult to hide. At the sa
 After the input file has been read and parsed, a function called \texttt{doPreface()} is called. This functions loops through the instructions and looks for certain kinds of instructions. If one is encountered, it is substituted for one instruction in the Preface part of the program and one instruction in the HEP. How this is done is different for different kinds of instructions.  
 
 \subsection{Workaround for lea instructions}
-The \emph{Load Effective Address} instruction loads an address and places it in a register. For example: \texttt{lea eax, [somedata]} computes the address of the source operand \texttt{somedata} and stores it in the destination register, \texttt{eax} without actually accessing the memory. 
+The \emph{Load Effective Address} or \emph{lea} instruction loads an address and places it in a register. For example: \texttt{lea eax, [somedata]} computes the address of the source operand \texttt{somedata} and stores it in the destination register, \texttt{eax} without actually accessing the memory. 
 
 If the address of \texttt{somedata} in the example above was \texttt{0x12345678}, the instruction would be encoded as follows: \texttt{8d 05 78 56 34 12}. This instruction is the 6 bytes long which can be hard to hide. 
 
@@ -375,7 +393,7 @@ As mentioned before, instructions accessing memory in the MEP needs to be taken 
 
 In the tool, this is implemented in a fairly simple manor. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector<Instruction>}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
 
-\noindent When an instruction accessing memory has been found (that has not been adjusted for earlier), the adjustment works like this:
+\noindent When an instruction accessing memory has been found (that has not been adjusted for earlier or affected by a \emph{lea} substitution), the adjustment works like this:
 \begin{enumerate}
 \item{Determine the register containing the address being accessed}
 \item{Make a note to allocate memory for the register}
@@ -494,7 +512,7 @@ The next two instructions will be used when passing parameters to \texttt{sys\_e
 The third parameter to \texttt{sys\_execve} is an array of strings which are passed as environment to the executed program. In this case, this parameter is not needed which is why a zero was placed after the argument array in memory. The last \emph{lea} instruction places the address of the zero in the \emph{edx} register.
 
 Lastly the system call is invoked by the interrupt instruction.
-Why do I want to do this???
+
 
 
 \subsection{writetofile}
@@ -557,35 +575,31 @@ When both of the test programs had been written and tested they were assembled w
 
 The following will be presented in the result:
 \begin{description}
-\item[mov substitution] This field shows if the tool was run with 32 bit \emph{mov} substitution or not
+\item[Replacing mov] This field shows if the tool was run with 32 bit \emph{mov} substitution or not
 \item[Instructions hidden] This field shows the percentage of instructions in the input program that were hidden by the tool. Calculated by dividing the number of instructions in the input program not shown in the ouput by the total number of instructions in the input program.
 \item[HEP functional] This field shows if the HEP is functional when the output from the tool is run.
 \item[MEP functional] This field shows if the MEP runs without crashing.
 \end{description}
 
-\subsection{Results for \texttt{launchshell}}
-The results for the two runs with \texttt{launchshell} as input is presented in table \ref{table:resultslaunchshell}.
+\noindent The results for the runs are presented in Table \ref{table:resultslaunchshell} and Table \ref{table:resultswritetofile}.
 
 \begin{table}[h]
-\scalebox{0.9}{
-\begin{tabular}{c c c c}
-mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
-Yes & 55.6 & yes & no \\
-No & 77.8 & yes & yes \\
+\scalebox{0.75}{
+\begin{tabular}{l l l l l}
+Replacing mov & Instructions hidden(\%) & HEP functional & MEP functional & Starting bytes \\ \hline
+Yes & 55.6 & Yes & No & 0xF3 0xF7\\
+No & 77.8 & Yes & Yes & 0xF7 0x87 0xFF\\
 \end{tabular}}
 
 \caption{Results for \texttt{launchshell}}
 \label{table:resultslaunchshell}
 \end{table}
-
-\subsection{Results for \texttt{writetofile}}
-
 \begin{table}
-\scalebox{0.8}{
-\begin{tabular}{c c c c}
-mov substitution & Instructions hidden(\%) & HEP functional & MEP functional \\ \hline
-yes & 14.3 & - & - \\
-No & 21.4 & no & no \\
+\scalebox{0.75}{
+\begin{tabular}{c c c c c}
+Replacing mov & Instructions hidden(\%) & HEP functional & MEP functional & Starting bytes \\ \hline
+Yes & 14.3 & - & - & 0xF7 0x87 0xFF \\
+No & 21.4 & No & No & 0xF7 0x87 0xFF\\
 \end{tabular}}
 
 \caption{Results for \texttt{writetofile}}
@@ -593,15 +607,265 @@ No & 21.4 & no & no \\
 \end{table}
 
 
-write about jecxz error, udis/nasm disagreement, jumps and why they don't work, memory adjustment with more than 1 instruction accessing the same register blablabla. Further development: smarter picking of startingbytes. More than one hep is the sync number is low. Better, more advanced substitution of instructions. Smarter more thorough memory adjustment. Potentially, a memory allocation label could be used between MEPs. Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic disassemblers.
+\noindent The output from the tool after the manual work and some finishing for each of the runs are presented below.
 
+\subsection{\texttt{launchshell}}
+\subsubsection{With 32 bit mov substitution}
+\begin{verbatim}
+BITS 32
+section .data
+
+    shellpath: db "/bin/sh",0
+    shellpathlen: equ $-shellpath
+
+    ebxData: dd 1
+    eaxData: dd 1
+
+section .text
+    global _start
+
+_start:
+;preface
+    lea esi, [shellpath-1]
+
+;Memory adjustment
+    lea ebx, [ebxData]
+    add ebx, 0x3fcefe3a
+    lea eax, [eaxData]
+    sub eax, 0x0
+
+    jmp mep0 + 0x2
+
+
+mep0:
+    repe test dword [ebx-0x3fcefe3a], 0x89087689
+    inc esi
+    or al, 0x66
+    mov eax, 0xe0c10000
+    adc [esi-0x48], ah
+    or eax, [eax]
+    lea ebx, [esi]
+    lea ecx, [esi+0x8]
+    lea edx, [esi+0xc]
+    int 0x80
+    mov eax, 1
+    mov ebx, 0
+    int 0x80
+\end{verbatim}
+
+\noindent When looking at the code it is clear that it looks very different from input program. The \emph{data section} is very similar with the addition of \texttt{ebxData} and \texttt{eaxData} which are used for memory adjustment. Next is the preface where the \emph{lea} instruction in the input program has been replaced and after that is the memory adjustmen part where the \emph{ebx} and \emph{eax} registers are populated and the offsets are compensated for. Now for the really interesting part, after the \emph{jmp} instruction the actual MEP is shown. Compairing it to the input program, the code looks very different. It is not until the \texttt{lea ebx, [esi]} instruction that the MEP has synced with the HEP and the code looks the same as in the input program. This means that the tool has been able to hide five of the nine instructions in the input program.
+
+\subsubsection{Without 32 bit mov substitution}
+\begin{verbatim}
+BITS 32
+section .data
+
+    shellpath: db "/bin/sh",0
+    shellpathlen: equ $-shellpath
+
+    ediData: dd 1
+    ecxData: dd 1
+    eaxData: dd 1
+    ebpData: dd 1
+
+section .text
+    global _start
+_start:
+;preface
+    lea esi, [shellpath-1]
+
+;Memory adjustment stuff 
+    lea edi, [ediData]
+    sub edi, 0x1c683ff
+    lea ecx, [ecxData]
+    sub ecx, 0xbb80c46
+    lea eax, [eaxData]
+    sub eax, 0x0
+    push ebp
+    lea ebp, [ebpData]
+    sub ebp, 0x84e8d1e
+
+    jmp mep0 + 0x3
+
+;mep
+mep0:
+    test dword [edi+0x1c683ff], 0x7689c031
+    or [ecx+0xbb80c46], cl
+    add [eax], al
+    add [ebp+0x84e8d1e], cl
+    lea edx, [esi+0xc]
+    int 0x80
+    pop ebp
+    mov eax, 1
+    mov ebx, 0
+    int 0x80
+\end{verbatim}
+
+\noindent This output is similar to the previous one, the memory adjustment part is a little different since this output uses other registers for memory access. The \emph{lea} substitution in the preface is the same. The real difference is in the MEP where it is not until the \texttt{lea edx, [esi+0xc]} that the MEP synchronizes with the HEP. Compairing this output to the input program, seven of the nine instructions have been hidden by the tool.
+
+\subsection{\texttt{writetofile}}
+\subsubsection{With 32 bit mov substitution}
+\begin{verbatim}
+BITS 32
+section .data
+
+    textoutput db 'Hello', 10
+    textoutputlen equ $ - textoutput
+    filetoopen db 'hello.txt', 0
+
+    ediData: dd 1
+    esiData: dd 1
+
+
+section .text
+    global _start
+_start:
+;preface
+
+;Memory adjustment 
+    lea edi, [ediData]
+    add edi, 0x47996f01
+    lea esi, [esiData]
+    add esi, 0x48
+
+    jmp mep0 + 0x3
+
+;mep
+mep0:
+    test dword [edi-0x47996f01], 0xe0c10000
+    adc [esi-0x48], ah
+    add eax, 0xbb6600
+    add cl, al
+    jecxz 0x28c31de8
+    mov bx, 0x46
+    mov cx, 0x0
+    shl ecx, 0x10
+    mov cx, 0x2
+    int 0x80
+    cmp eax, 0x0
+    jl 0x28c31dea
+    mov ebx, eax
+    mov ax, 0x0
+    shl eax, 0x10
+    mov ax, 0x4
+    mov cx, 0x0
+    shl ecx, 0x10
+    mov cx, 0x40
+    mov dx, 0x0
+    shl edx, 0x10
+    mov dx, 0x6
+    int 0x80
+    mov ax, 0x0
+    shl eax, 0x10
+    mov ax, 0x1
+    mov bx, 0x0
+    shl ebx, 0x10
+    mov bx, 0x0
+    mov eax, 1
+    mov ebx, 0
+    int 0x80
+\end{verbatim}
+
+\noindent When running the tool with \texttt{writetofile} as input and using 32 bit \emph{mov} substitution, the output is on the same format as the runs with \texttt{launchshell}. The \emph{data section} looks similar, the variables from the input program are allocated together with the data for memory adjustment. The MEP is a little harder to interpret since the 32 bit \emph{mov} substitution has changed the look of the program. Upon assembly of the input program, the label in the instruction \texttt{mov ebx, filetoopen} has been translated into \texttt{mov ebx, 0x46}. Knowing this, it can be determined that the tool only managed to hide two of the instructions in the input program. 
+
+An interesting thing to note is that while the output looks completely different from the input program, it is not hidden, this is simply the work of the 32 bit \emph{mov} sustitution which does not mean that the program is obfuscated since it is still easy to see what the program does.
+
+\subsubsection{Without 32 bit mov substitution}
+\begin{verbatim}
+BITS 32
+section .data
+
+    textoutput db 'Hello', 10
+    textoutputlen equ $ - textoutput
+    filetoopen db 'hello.txt', 0
+
+    ediData: dd 1
+    eaxData: dd 1
+    ecxData: dd 1
+
+
+section .text
+    global _start
+_start:
+;preface
+
+;Memory adjustment
+    lea edi, [ediData]
+    sub edi, 0x5b890ff
+    lea eax, [eaxData]
+    sub eax, 0x0
+    lea ecx, [ecxData]
+    sub ecx, 0x2
+
+    jmp mep0 + 0x3
+
+;mep
+mep0:
+    test dword [edi+0x5b890ff], 0xbb000000
+    inc esi
+    add [eax], al
+    add [ecx+0x2], bh
+    int 0x80
+    cmp eax, 0x0
+    jl 0x2d6d57e9
+    mov ebx, eax
+    mov eax, 0x4
+    mov ecx, 0x40
+    mov edx, 0x6
+    int 0x80
+    mov eax, 0x1
+    mov ebx, 0x0
+    int 0x80
+    mov eax, 1
+    mov ebx, 0
+    int 0x80
+\end{verbatim}
+
+\noindent The format of this output is the same as for the others. Looking at the MEP it is by the \texttt{int 0x80} instruction that the MEP has synchronized with the HEP. This means that the almost the entire first system call has been hidden. The number of hidden instructions is for this run three.\newline
+
+\noindent Another interesting observation is that the tool chose the starting bytes \texttt{0xF7 0x87 0xFF} for both of the \texttt{writetofile} runs aswell as for one of the \texttt{launchshell} runs even though they contain different instructions. 
 
 \chapter{Discussion and further development}
-\section{\texttt{launchshell}}
+
+\section{Observations regarding \texttt{launchshell}}
+As shown in the \emph{Result} section, the tool was most successful when obfuscating this program, both with and without the 32 bit \emph{mov} substitution. Interestingly enough, the best result was achieved without the 32 bit \emph{mov} substitution. Reaching a 77.8\% level of obfuscation while still being able to run both the MEP and the HEP is a very good result. It is not a perfect result since the last 22.2\% could potentially contain sensitive code. There are a few potential remedies for this problem that will be discussed in the \emph{Further development} section. 
+
+Running the tool with this input program with the 32 bit \emph{mov} substitution achieved a 55.6\% level of obfuscation which is still pretty good. While the HEP was able to run and actually start a shell the MEP crashed. The reason for the crash is that the \texttt{or eax, [eax]} instruction tried to access memory that it was not allowed to. Even though the memory access of the address in \emph{eax} had been adjusted for, two instructions before the \texttt{or eax, [eax]} instruction had changed the value of \emph{eax}. This is a weakness in the memory adjustment part of the tool.
 
 
+\section{Observations regarding \texttt{writetofile}}
+While the tool achieved fairly good results when obfuscating \texttt{launchshell}, attempting to obfuscate \texttt{writetofile} was a different story. Not only did the tool only manage to hide at most 21.4\% of the program, which in this case is only three instructions, none of the obfuscated programs worked as intended. 
 
-\section{texttt{writetofile}}
+The output generated when obfuscating the program without the 32 bit \emph{mov} substitution managed to run and the HEP even managed to run without crashing. However, even though the HEP ran, it did not work as intented, it did not write ``Hello" to the file. The reason for this is that when assembling the instructions in the output, \texttt{nasm} chose a different encoding of the \texttt{add [ecx+0x2], bh} instruction in the MEP, resulting in the wrong behaviour in the HEP. The problem is that \texttt{nasm} chose to encode the instruction \texttt{add [ecx+0x2], bh} as \texttt{[00 79 02]} instead of \texttt{[00 b9 02 00 00 00]} as the tool intended. Both of the encodings are correct, both \emph{Udis} and \texttt{objdump} recognizes \texttt{[00 b9 02 00 00 00]} as \texttt{add [ecx+0x2], bh}. When the HEP is run, instead of placing the correct value in \emph{ecx} using \texttt{mov ecx, 0x2}(\texttt{[b9 02 00 00 00]}),  the instruction \texttt{\texttt{jns 0xf}} is executed. \emph{jns} is short for \emph{jump not signed} and does a relative jump if the \emph{sign} flag is not set. Because the \emph{sign} flag is not set on this occasion, the jump is taken and the interrupt instruction invoking the system call is skipped. This problem is discussed further under \emph{Known problems}.
+
+The reason for the crash of the MEP is an issue that arise when label are used. When a program containing labels is assembled, the labels are translated into memory addresses, for example \texttt{jmp exit} could be translated into \texttt{jmp 0x80902342}. The problem is that when the program is assembled without any headers to make it runnable, the memory address for the label is different from when the program is assembled with headers. When the assembled program is parsed by the tool, the labels have already been translated. The tool can then only operate on the bytes that are available for it. This means that if a label is used in the input program, the corresponding memory address will be present in the obfuscated program. Since this memory address is different from the one that would be used if the input program was runnable, if it were to be used in the HEP, this would result in a crash. 
+
+Since there was a \texttt{jl exit} instruction in the input program and the \texttt{sys\_call} did not work and placed a negative number in \emph{eax}, this jump was taken when the program was run resulting in a segmentation fault because the program was not allowed to access the address.
+
+When obfuscating \texttt{writetofile} with the 32 bit \emph{mov} substitution the situation grew even more bleak. Only two instructions (actually only one and a half because of the \emph{mov} substitution) was hidden. On top of that the program could not be run because it could not be linked to be executable. \texttt{nasm} was able to assemble the program but \texttt{ld}\cite{ld} could not link it and produced an error message instead. 
+
+\section{Known problems}
+\begin{itemize}
+\item{write about jecxz error }
+
+\item{udis/nasm disagreement }
+
+\item{jumps in the hep and why they don't work }
+
+\item{memory adjustment with more than one instruction accessing the same register } 
+
+\item{label problem}
+\end{itemize}
+
+\section{Further development}
+\begin{itemize}
+\item{smarter picking of startingbytes}
+\item{More than one hep is the sync number is low}
+\item{Better, more advanced substitution of instruction} 
+\item{Smarter more thorough memory adjustment}
+\item{Potentially, a memory allocation label could be used between MEPs}
+\item{Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic}disassemblers.
+\end{itemize}
 
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
