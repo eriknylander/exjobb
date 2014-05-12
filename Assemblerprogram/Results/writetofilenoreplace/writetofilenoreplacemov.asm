@@ -27,7 +27,7 @@ sub eax, 0x0
 lea ecx, [ecxData]
 sub ecx, 0x2
 
-jmp mep0 + 0x3
+;jmp mep0 + 0x3
 
 ;mep
 mep0:
