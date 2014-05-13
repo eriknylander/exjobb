@@ -20,6 +20,7 @@
 \usepackage{url}
 \usepackage{todonotes}
 \usepackage{graphicx}
+\usepackage{fancyvrb}
 
 \bibliographystyle{alpha}
 \unitlength=1mm
@@ -351,7 +352,7 @@ The use of a label yields a problem that also affects other parts of the tool. S
 \section{Generating a MEP}
 The first step when generating a MEP from the HEP is to insert one or more bytes before the HEP (from here on called starting bytes) so that a new execution path with overlapping instructions is created. Since the x86 architecture can handle instructions that are up to 15 bytes long, the maximum number of bytes to insert before the HEP is 14. In the tool however, the maximum number of bytes inserted is three. This is mainly because the search space would be too great and the tool would take a very long time to run. 
 
-The choice of starting bytes depends on the instructions in the HEP, therefore all combinations of starting bytes (with some exceptions) are inserted before the HEP and the result is evaluated. Because the x86 provides some instructions with a length in the range of one to three bytes, these starting bytes are discarded since they only generate one instruction and no overlapping occurs.
+The choice of starting bytes depends on the instructions in the HEP, therefore all combinations of starting bytes (with some exceptions) are inserted before the HEP and the result is evaluated. Because the x86 provides some instructions with a length in the range of one to three bytes, these starting bytes are discarded since they only generate one instruction and no overlapping occurs. The other types of starting bytes that are discarded are those beginning with \texttt{F6} because of limitations in the implementation of \texttt{libemu}.
 
 
 \subsection{Input starting bytes}
@@ -611,7 +612,8 @@ No & 21.4 & No & No & 0xF7 0x87 0xFF\\
 
 \subsection{\texttt{launchshell}}
 \subsubsection{With 32 bit mov substitution}
-\begin{verbatim}
+
+\begin{Verbatim}[fontsize=\tiny]
 BITS 32
 section .data
 
@@ -651,12 +653,12 @@ mep0:
     mov eax, 1
     mov ebx, 0
     int 0x80
-\end{verbatim}
+\end{Verbatim}
 
 \noindent When looking at the code it is clear that it looks very different from input program. The \emph{data section} is very similar with the addition of \texttt{ebxData} and \texttt{eaxData} which are used for memory adjustment. Next is the preface where the \emph{lea} instruction in the input program has been replaced and after that is the memory adjustmen part where the \emph{ebx} and \emph{eax} registers are populated and the offsets are compensated for. Now for the really interesting part, after the \emph{jmp} instruction the actual MEP is shown. Compairing it to the input program, the code looks very different. It is not until the \texttt{lea ebx, [esi]} instruction that the MEP has synced with the HEP and the code looks the same as in the input program. This means that the tool has been able to hide five of the nine instructions in the input program.
 
 \subsubsection{Without 32 bit mov substitution}
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\tiny]
 BITS 32
 section .data
 
@@ -699,13 +701,13 @@ mep0:
     mov eax, 1
     mov ebx, 0
     int 0x80
-\end{verbatim}
+\end{Verbatim}
 
 \noindent This output is similar to the previous one, the memory adjustment part is a little different since this output uses other registers for memory access. The \emph{lea} substitution in the preface is the same. The real difference is in the MEP where it is not until the \texttt{lea edx, [esi+0xc]} that the MEP synchronizes with the HEP. Compairing this output to the input program, seven of the nine instructions have been hidden by the tool.
 
 \subsection{\texttt{writetofile}}
 \subsubsection{With 32 bit mov substitution}
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\tiny]
 BITS 32
 section .data
 
@@ -764,14 +766,14 @@ mep0:
     mov eax, 1
     mov ebx, 0
     int 0x80
-\end{verbatim}
+\end{Verbatim}
 
 \noindent When running the tool with \texttt{writetofile} as input and using 32 bit \emph{mov} substitution, the output is on the same format as the runs with \texttt{launchshell}. The \emph{data section} looks similar, the variables from the input program are allocated together with the data for memory adjustment. The MEP is a little harder to interpret since the 32 bit \emph{mov} substitution has changed the look of the program. Upon assembly of the input program, the label in the instruction \texttt{mov ebx, filetoopen} has been translated into \texttt{mov ebx, 0x46}. Knowing this, it can be determined that the tool only managed to hide two of the instructions in the input program. 
 
 An interesting thing to note is that while the output looks completely different from the input program, it is not hidden, this is simply the work of the 32 bit \emph{mov} sustitution which does not mean that the program is obfuscated since it is still easy to see what the program does.
 
 \subsubsection{Without 32 bit mov substitution}
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\tiny]
 BITS 32
 section .data
 
@@ -819,7 +821,7 @@ mep0:
     mov eax, 1
     mov ebx, 0
     int 0x80
-\end{verbatim}
+\end{Verbatim}
 
 \noindent The format of this output is the same as for the others. Looking at the MEP it is by the \texttt{int 0x80} instruction that the MEP has synchronized with the HEP. This means that the almost the entire first system call has been hidden. The number of hidden instructions is for this run three.\newline
 
@@ -836,36 +838,67 @@ Running the tool with this input program with the 32 bit \emph{mov} substitution
 \section{Observations regarding \texttt{writetofile}}
 While the tool achieved fairly good results when obfuscating \texttt{launchshell}, attempting to obfuscate \texttt{writetofile} was a different story. Not only did the tool only manage to hide at most 21.4\% of the program, which in this case is only three instructions, none of the obfuscated programs worked as intended. 
 
-The output generated when obfuscating the program without the 32 bit \emph{mov} substitution managed to run and the HEP even managed to run without crashing. However, even though the HEP ran, it did not work as intented, it did not write ``Hello" to the file. The reason for this is that when assembling the instructions in the output, \texttt{nasm} chose a different encoding of the \texttt{add [ecx+0x2], bh} instruction in the MEP, resulting in the wrong behaviour in the HEP. The problem is that \texttt{nasm} chose to encode the instruction \texttt{add [ecx+0x2], bh} as \texttt{[00 79 02]} instead of \texttt{[00 b9 02 00 00 00]} as the tool intended. Both of the encodings are correct, both \emph{Udis} and \texttt{objdump} recognizes \texttt{[00 b9 02 00 00 00]} as \texttt{add [ecx+0x2], bh}. When the HEP is run, instead of placing the correct value in \emph{ecx} using \texttt{mov ecx, 0x2}(\texttt{[b9 02 00 00 00]}),  the instruction \texttt{\texttt{jns 0xf}} is executed. \emph{jns} is short for \emph{jump not signed} and does a relative jump if the \emph{sign} flag is not set. Because the \emph{sign} flag is not set on this occasion, the jump is taken and the interrupt instruction invoking the system call is skipped. This problem is discussed further under \emph{Known problems}.
+The output generated when obfuscating the program without the 32 bit \emph{mov} substitution managed to run and the HEP even managed to run without crashing. However, even though the HEP ran, it did not work as intented, it did not write ``Hello" to the file. The reason for this is that when assembling the instructions in the output, \texttt{nasm} chose a different encoding of the \texttt{add [ecx+0x2], bh} instruction in the MEP, resulting in the wrong behaviour in the HEP. The instruction \texttt{add [ecx+0x2], bh} was encoded as \texttt{[00 79 02]} instead of \texttt{[00 b9 02 00 00 00]} as the tool intended. Both of the encodings are correct, both \emph{Udis} and \texttt{objdump} recognizes \texttt{[00 b9 02 00 00 00]} as \texttt{add [ecx+0x2], bh}. When the HEP is run, instead of placing the correct value in \emph{ecx} using \texttt{mov ecx, 0x2}(\texttt{[b9 02 00 00 00]}),  the instruction \texttt{jns 0xf} (\texttt{79 02}) is executed. \emph{jns} is short for \emph{jump not signed} and does a relative jump if the \emph{sign} flag is not set. Because the \emph{sign} flag is not set on this occasion, the jump is taken and the interrupt instruction invoking the system call is skipped. This problem is discussed further under \emph{Known problems}.
 
-The reason for the crash of the MEP is an issue that arise when label are used. When a program containing labels is assembled, the labels are translated into memory addresses, for example \texttt{jmp exit} could be translated into \texttt{jmp 0x80902342}. The problem is that when the program is assembled without any headers to make it runnable, the memory address for the label is different from when the program is assembled with headers. When the assembled program is parsed by the tool, the labels have already been translated. The tool can then only operate on the bytes that are available for it. This means that if a label is used in the input program, the corresponding memory address will be present in the obfuscated program. Since this memory address is different from the one that would be used if the input program was runnable, if it were to be used in the HEP, this would result in a crash. 
+The reason for the crash of the MEP is an issue that arise when labels are used. When a program containing labels is assembled, the labels are translated into memory addresses, for example \texttt{jmp exit} could be translated into \texttt{jmp 0x80902342}. The problem is that when the program is assembled without any headers to make it runnable, the memory address for the label is different from when the program is assembled with headers. When the assembled program is parsed by the tool, the labels have already been translated. The tool can then only operate on the bytes that are available to it. This means that if a label is used in the input program, the corresponding memory address will be present in the obfuscated program. Since this memory address is different from the one that would be used if the input program was runnable, if it were to be used in the HEP, this would result in a crash. 
 
 By time the execution has reached the \texttt{int 0x80} instruction, the number in \emph{eax} is not related to any system call. Because of this, when the interrupt instruction is executed, a negative number is placed in \emph{eax}. Since there is a \texttt{jl exit} instruction in the HEP depending on whether the value in \emph{eax} is smaller than zero and the MEP has synced with the HEP by this time, the jump is taken, causing a segmentation fault because the program is not allowed to access the memory address in the jump instruction. 
 
 When obfuscating \texttt{writetofile} with the 32 bit \emph{mov} substitution the situation grew even more bleak. Only two instructions (actually only one and a half because of the \emph{mov} substitution) was hidden. On top of that the program could not be run because it could not be linked to be executable. \texttt{nasm} was able to assemble the program but \texttt{ld}\cite{ld} could not link it and produced an error message instead. The cause of this problem is the \texttt{jecxz 0x28c31de8} instruction which will be discussed in \emph{Known problems}.
 
 \section{Known problems}
-\begin{itemize}
-\item{write about jecxz error }
+These are some problem discovered during the implementation of the tool. They will be explained below and in some cases potential solutions will be suggested.
 
-\item{udis/nasm disagreement }
+\subsection{The label problem}
+The problem with labels has been touched on already in previous sections. It is a big problem since it involves all uses of labels Since this breaks the behaviour of the HEP and in most cases results in a segmentation error causing the program to crash it is a big problem that needs a solution. 
 
-\item{jumps in the hep and why they don't work }
+One solution could be to use a file assembled together with headers to make it runnable, where the labels have been translated into correct memory addresses as input to the tool. The tool would then have to ignore the instructions having to do with the headers and find the instructions that needs to be hidden. Then the tool could perform the same operations as it does currently but hopefully without the label problem. 
 
-\item{memory adjustment with more than one instruction accessing the same register } 
+\subsection{Errors caused by jecxz}
 
-\item{label problem}
-\end{itemize}
+
+\subsection{Weaknesses in memory adjustment}
+
+
+\subsection{Wrong encodings when assembling}
+
 
 \section{Further development}
+In the following sections are some suggestions for improvements in the tool to make it better and less prone to unsuccesful obfuscations.
+
+\subsection{Choosing starting bytes}
+Currently, when the tool chooses starting bytes, first it removes all starting bytes that did not generate the longest possible MEP, it then proceeds to remove the starting bytes with the most memory accessing instructions and then it chooses the last \texttt{Opcode} object in the list of starting bytes to act as the actual starting bytes for the MEP. There are a few problems with this approach that will be discussed below.
+
+To obtain the best possible MEP, all possible starting bytes would have to be tested with all possible variations of the input program. Variations of the input program could be swapping one instruction at a time, maybe several times if several alternatives to the instruction exists. Then every one of the generated MEPs could be checked for problems and the best ones could be picked out. However, this is not an approach that is computionally feasible, it would take an enormous amount of time to test all combinations. This is why the number of bytes in the starting bytes has been limited to three.
+
+The next problem is regarding choosing starting bytes based upon the number of memory accessing instructions. As mentioned in the \emph{Implementation} section, a MEP containing three memory accessing instruction using three different registers is better than a MEP with only two memory accessing instructions that uses the same register. This is one of the most important improvements that could be made to the tool since it could greatly reduce the number of problems regarding memory adjustment.
+
+\subsection{Having more than one MEP}
+In some programs it is difficult to find starting bytes that can hide a lot of instructions. This problem becomes even bigger as the size of the input program grows. Since obfuscating only a portion of a program could be a complete waste of time if the entirety of the input program contains sensitive instructions this is also a big problem and one of the biggest challenges when using instruction overlapping.
+
+One possible solution to this problem could be to have more than one MEP. This could work in such a way that if the MEP synchronizes with the HEP after an insufficient amount of instructions, the tool could insert a new jump instruction and new starting bytes so that an additional MEP is created. This would effectively hide an additional portion of the program and it would do so without compromising the behaviour of the HEP since it would only cause a jump into the next instruction of the HEP. Of course the problem with finding the best starting bytes and memory adjustment would have to be dealt with again.
+
+The memory adjustment could be done so that there was a memory adjustment section for each MEP in the output program. Then when one MEP ended, the execution would jump to the memory adjustment section for the next MEP in line where all the memory accessing instruction in that MEP would be adjusted for. In order to not change the behaviour of the HEP, this could be made so that the jump to the memory adjustment section would only be taken if the MEPs were to be executed. 
+
+\subsection{Substituting instructions on demand}
+When encountering problematic instructions in the MEP, currently the tool tries to pick other starting bytes in an attempt to get rid of the problematic instructions. If none of the starting bytes produce a satisfying MEP, the tool adds a one byte \emph{nop} instruction before the HEP and the process of choosing starting bytes is started all over again. Not only does this make the runtime of the tool a lot longer but there is also no guarantee that it will find a suitable MEP.
+
+A far better solution would be to replace instructions in the HEP if they cause problems in the MEP. Currently, the tool can substitute 32 bit \emph{mov} instructions by using 16 bit \emph{mov} instructions and a logical shift instruction. The problem with the current implementation is that it can only replace 32 bit \emph{mov} instructions and only does so by replacing all of them at once.
+
+This is an area in the tool that could be expanded which would contribute immensely to finding good MEPs. The way this would work is that when a problematic instruction is found in the MEP, the tool finds the instruction in the HEP the makes up the problematic instruction and replace it with some other instruction(s). This could be used to get rid of all kinds of instructions and if needed avoid difficult memory adjustments. Thankfully there are a lot of ways to do the same thing in x86. 
+
+\subsection{Adding code to fool dynamic disassemblers}
+
+\subsection{Taking advantage of the emulator}
+\texttt{libemu} was first considered for the tool because of it emulation capabilities, however the tool does not use the emulator at all. 
+
+The primary use of the emulator, would be if a conditional jump instruction was found in the MEP. Then the instructions prior to the jump instruction could be emulated and the tool could inspect the \emph{eflags} register to determine if the jump would be taken. If that would be the case, the instruction in the HEP generating the jump in the MEP would have to be replaced. If not, the jump would be allowed to stay in the MEP since it would not compromise the control flow of the program.
+
+Another less obvious use could be to help with instruction substitution. As mentioned in the \emph{Implementation} section, instead of using 32 bit \emph{mov} instructions when moving values smaller than \texttt{0xFF}, eight bit \emph{mov} instructions could be used instead. The problem with this approach was that if a larger value than \texttt{0xFF} already was in the register, the wrong value would reside in the register since the eight bit \emph{mov} only would affect the least significant part of the register. The emulator could be used to emulate all the instructions before a 32 bit \emph{mov} and look at the value in the register to determine if the instruction could be replaced with its eight bit equivalent.
+
 \begin{itemize}
-\item{smarter picking of startingbytes}
-\item{More than one hep is the sync number is low}
-\item{Better, more advanced substitution of instruction} 
 \item{Smarter more thorough memory adjustment}
-\item{Potentially, a memory allocation label could be used between MEPs}
 \item{Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic}disassemblers.
-\item{Emulating instructions before a jump in the hep}
 \end{itemize}
 
 \chapter{Conclusion}
