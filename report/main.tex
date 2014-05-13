@@ -640,19 +640,19 @@ _start:
 
 
 mep0:
-    repe test dword [ebx-0x3fcefe3a], 0x89087689
-    inc esi
-    or al, 0x66
-    mov eax, 0xe0c10000
-    adc [esi-0x48], ah
-    or eax, [eax]
-    lea ebx, [esi]
-    lea ecx, [esi+0x8]
-    lea edx, [esi+0xc]
-    int 0x80
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+    repe test dword [ebx-0x3fcefe3a], 0x89087689        ; f3 f7 83 c6 01 31 c0 89 76 08 89
+    inc esi                                             ; 46
+    or al, 0x66                                         ; 0c 66 
+    mov eax, 0xe0c10000                                 ; b8 00 00 c1 e0
+    adc [esi-0x48], ah                                  ; 10 66 b8
+    or eax, [eax]                                       ; 0b 00
+    lea ebx, [esi]                                      ; 8d 1e
+    lea ecx, [esi+0x8]                                  ; 8d 4e 08
+    lea edx, [esi+0xc]                                  ; 8d 56 0c
+    int 0x80                                            ; cd 80
+    mov eax, 1                                          ; b8 10 00 00 00
+    mov ebx, 0                                          ; bb 00 00 00 00
+    int 0x80                                            ; cd 80
 \end{Verbatim}
 
 \noindent When looking at the code it is clear that it looks very different from input program. The \emph{data section} is very similar with the addition of \texttt{ebxData} and \texttt{eaxData} which are used for memory adjustment. Next is the preface where the \emph{lea} instruction in the input program has been replaced and after that is the memory adjustmen part where the \emph{ebx} and \emph{eax} registers are populated and the offsets are compensated for. Now for the really interesting part, after the \emph{jmp} instruction the actual MEP is shown. Compairing it to the input program, the code looks very different. It is not until the \texttt{lea ebx, [esi]} instruction that the MEP has synced with the HEP and the code looks the same as in the input program. This means that the tool has been able to hide five of the nine instructions in the input program.
@@ -691,16 +691,16 @@ _start:
 
 ;mep
 mep0:
-    test dword [edi+0x1c683ff], 0x7689c031
-    or [ecx+0xbb80c46], cl
-    add [eax], al
-    add [ebp+0x84e8d1e], cl
-    lea edx, [esi+0xc]
-    int 0x80
-    pop ebp
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+    test dword [edi+0x1c683ff], 0x7689c031              ; f7 87 ff 83 c6 01 31 c0 89 76     
+    or [ecx+0xbb80c46], cl                              ; 08 89 46 0c b8 0b
+    add [eax], al                                       ; 00 00
+    add [ebp+0x84e8d1e], cl                             ; 00 8d 1e 8d 4e 08
+    lea edx, [esi+0xc]                                  ; 8d 56 0c
+    int 0x80                                            ; cd 80
+    pop ebp                                             ; 5d
+    mov eax, 1                                          ; b8 01 00 00 00
+    mov ebx, 0                                          ; bb 00 00 00 00
+    int 0x80                                            ; cd 80
 \end{Verbatim}
 
 \noindent This output is similar to the previous one, the memory adjustment part is a little different since this output uses other registers for memory access. The \emph{lea} substitution in the preface is the same. The real difference is in the MEP where it is not until the \texttt{lea edx, [esi+0xc]} that the MEP synchronizes with the HEP. Compairing this output to the input program, seven of the nine instructions have been hidden by the tool.
@@ -734,38 +734,38 @@ _start:
 
 ;mep
 mep0:
-    test dword [edi-0x47996f01], 0xe0c10000
-    adc [esi-0x48], ah
-    add eax, 0xbb6600
-    add cl, al
-    jecxz 0x28c31de8
-    mov bx, 0x46
-    mov cx, 0x0
-    shl ecx, 0x10
-    mov cx, 0x2
-    int 0x80
-    cmp eax, 0x0
-    jl 0x28c31dea
-    mov ebx, eax
-    mov ax, 0x0
-    shl eax, 0x10
-    mov ax, 0x4
-    mov cx, 0x0
-    shl ecx, 0x10
-    mov cx, 0x40
-    mov dx, 0x0
-    shl edx, 0x10
-    mov dx, 0x6
-    int 0x80
-    mov ax, 0x0
-    shl eax, 0x10
-    mov ax, 0x1
-    mov bx, 0x0
-    shl ebx, 0x10
-    mov bx, 0x0
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+    test dword [edi-0x47996f01], 0xe0c10000             ; f7 87 ff 90 66 b8 00 00 c1 e0
+    adc [esi-0x48], ah                                  ; 10 66 b8
+    add eax, 0xbb6600                                   ; 05 00 66 bb 00
+    add cl, al                                          ; 00 c1
+    jecxz 0x28c31de8                                    ; e3 e7
+    mov bx, 0x46                                        ; 66 bb 46 00
+    mov cx, 0x0                                         ; 66 b9 00 00
+    shl ecx, 0x10                                       ; c1 e1 10
+    mov cx, 0x2                                         ; 66 b9 02 00
+    int 0x80                                            ; cd 80
+    cmp eax, 0x0                                        ; 83 f8 00
+    jl 0x28c31dea                                       ; 0f 8c e6 1d c3 28
+    mov ebx, eax                                        ; 89 c3
+    mov ax, 0x0                                         ; 66 b8 00 00
+    shl eax, 0x10                                       ; c1 e0 10
+    mov ax, 0x4                                         ; 66 b8 04 00
+    mov cx, 0x0                                         ; 66 b9 00 00
+    shl ecx, 0x10                                       ; c1 e1 10
+    mov cx, 0x40                                        ; 66 b9 04 00
+    mov dx, 0x0                                         ; 66 ba 00 00 
+    shl edx, 0x10                                       ; c1 e2 10
+    mov dx, 0x6                                         ; 66 ba 06 00
+    int 0x80                                            ; cd 80
+    mov ax, 0x0                                         ; 66 b8 00 00
+    shl eax, 0x10                                       ; c1 e0 10
+    mov ax, 0x1                                         ; 66 b8 01 00
+    mov bx, 0x0                                         ; 66 bb 00 00
+    shl ebx, 0x10                                       ; c1 e3 10
+    mov bx, 0x0                                         ; 66 bb 00 00
+    mov eax, 1                                          ; b8 01 00 00 00
+    mov ebx, 0                                          ; bb 00 00 00 00
+    int 0x80                                            ; cd 80
 \end{Verbatim}
 
 \noindent When running the tool with \texttt{writetofile} as input and using 32 bit \emph{mov} substitution, the output is on the same format as the runs with \texttt{launchshell}. The \emph{data section} looks similar, the variables from the input program are allocated together with the data for memory adjustment. The MEP is a little harder to interpret since the 32 bit \emph{mov} substitution has changed the look of the program. Upon assembly of the input program, the label in the instruction \texttt{mov ebx, filetoopen} has been translated into \texttt{mov ebx, 0x46}. Knowing this, it can be determined that the tool only managed to hide two of the instructions in the input program. 
@@ -803,24 +803,21 @@ _start:
 
 ;mep
 mep0:
-    test dword [edi+0x5b890ff], 0xbb000000
-    inc esi
-    add [eax], al
-    add [ecx+0x2], bh
-    int 0x80
-    cmp eax, 0x0
-    jl 0x2d6d57e9
-    mov ebx, eax
-    mov eax, 0x4
-    mov ecx, 0x40
-    mov edx, 0x6
-    int 0x80
-    mov eax, 0x1
-    mov ebx, 0x0
-    int 0x80
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+    test dword [edi+0x5b890ff], 0xbb000000              ; f7 87 ff 90 b8 05 00 00 00 bb
+    inc esi                                             ; 46
+    add [eax], al                                       ; 00 00 
+    add [ecx+0x2], bh                                   ; 00 79 02
+    int 0x80                                            ; cd 80
+    cmp eax, 0x0                                        ; 83 f8 00
+    jl 0x2d6d57e9                                       ; 0f 8c e5 57 6d 2d 
+    mov ebx, eax                                        ; 89 c3
+    mov eax, 0x4                                        ; b8 04 00 00 00
+    mov ecx, 0x40                                       ; b9 40 00 00 00 
+    mov edx, 0x6                                        ; ba 06 00 00 00
+    int 0x80                                            ; cd 80
+    mov eax, 0x1                                        ; b8 01 00 00 00
+    mov ebx, 0x0                                        ; bb 00 00 00 00
+    int 0x80                                            ; cd 80
 \end{Verbatim}
 
 \noindent The format of this output is the same as for the others. Looking at the MEP it is by the \texttt{int 0x80} instruction that the MEP has synchronized with the HEP. This means that the almost the entire first system call has been hidden. The number of hidden instructions is for this run three.\newline
