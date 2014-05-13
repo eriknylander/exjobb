@@ -177,7 +177,7 @@
 %% \@cftmaketoctitle is done since the tocloft package only prints the
 %% title with a certain font, and like it as achapter (without numbers). 
 \RequirePackage{tocloft}
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{1}
 \def\contentsname{Table of Contents}
 \def\listfigurename{List of Figures}
 \def\listtablename{List of Tables}

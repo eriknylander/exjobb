@@ -488,11 +488,11 @@ section .text
 
 _start:
 
-    lea esi, [shellpath]
-    xor eax, eax
+    lea esi, [shellpath]                    ; 8d 35 20 00 00 00
+    xor eax, eax                            ; 31 c0
 
-    mov dword [esi+shellpathlen], esi
-    mov dword [esi+shellpathlen+4], eax 
+    mov dword [esi+shellpathlen], esi       ; 89 76 08
+    mov dword [esi+shellpathlen+4], eax     ; 89 46 0c
 
 \end{verbatim}
 
@@ -501,11 +501,11 @@ _start:
 The next two instructions will be used when passing parameters to \texttt{sys\_execve}. The first instruction will place the address of the \texttt{shellpath} string directly after the string itself. The second instruction will place the value of \emph{eax}, namely zero directly after the address in the previous instructions in memory. These use of these two instructions might seem strange but there is a good explaination which will be presented shortly.
 
 \begin{verbatim}
-    mov eax, 0xb
-    lea ebx, [esi]
-    lea ecx, [esi+shellpathlen]
-    lea edx, [esi+shellpathlen+4]
-    int 0x80
+    mov eax, 0xb                            ; b8 0b 00 00 00
+    lea ebx, [esi]                          ; 8d e1
+    lea ecx, [esi+shellpathlen]             ; 8d 4e 08
+    lea edx, [esi+shellpathlen+4]           ; 8d 56 0c
+    int 0x80                                ; cd 80
 \end{verbatim}
 
 \noindent The final part of the program is the system call. First, the number $0xb$ is placed in \emph{eax}. This is the number identifying \texttt{sys\_execve}. Then the address of the \texttt{shellpath} string is placed in \emph{ebx}. The next step is where the seemingly strange two instructions are explained. \texttt{sys\_execve} takes three parameters, the first one is a pointer to a string containing the path of the program to be started, the second one is a pointer to an array containing arguments to the program being started, by convention, the first argument is the path to the program itself which is why the address of the \texttt{shellpath} string was placed after the string in memory. The next \emph{lea} instruction places the address of the argument in \emph{ecx}. 
@@ -535,17 +535,17 @@ section .text
 global _start
 
 _start:
-    mov eax, 0x5
-    mov ebx, filetoopen
-    mov ecx, 0x2
-    int 0x80
+    mov eax, 0x5                            ; b8 05 00 00 00
+    mov ebx, filetoopen                     ; bb 46 00 00 00
+    mov ecx, 0x2                            ; b9 02 00 00 00
+    int 0x80                                ; cd 80
 \end{verbatim}
 
 \noindent The next part of the program is responsible for opening the file. The first instruction moves the number $0x5$ which is the number for \texttt{sys\_open} to \emph{eax}. The second instruction places the address of the \texttt{filetoopen} string in \emph{ebx}. The third instruction the value $0x2$ is placed in \emph{ecx}. This value determines that the file is opened with read and write permissions. Lastly, the system call is invoked by the interrupt instruction.
 
 \begin{verbatim}
-    cmp eax, 0
-    jl exit
+    cmp eax, 0                              ; 83 f8 00
+    jl exit                                 ; 0f 8c f8 ff ff ff
 \end{verbatim}
 
 \noindent When the \texttt{sys\_open} system call has been invoked, the result of the system call is placed in \emph{eax}. If the file does not exist, a negative number is placed in \emph{eax} and if it does exist, the address of the file descriptor is placed in \emph{eax}. 
@@ -553,20 +553,20 @@ _start:
 These two instructions are meant to serve as error handling. The first instruction compares if the value in \emph{eax} is bigger than zero and the result of the compared is saved in the \emph{eflags} register. The second instruction then checks the \emph{eflags} register to examine the result, if the value was smaller than zero, the execution will jump to the \texttt{exit} label. Otherwise the execution continues.
 
 \begin{verbatim}
-    mov ebx, eax
-    mov eax, 0x4
-    mov ecx, textoutput
-    mov edx, textoutputlen
-    int 0x80
+    mov ebx, eax                            ; 89 c3
+    mov eax, 0x4                            ; b8 04 00 00 00
+    mov ecx, textoutput                     ; b9 40 00 00 00 
+    mov edx, textoutputlen                  ; ba 06 00 00 00
+    int 0x80                                ; cd 80
 \end{verbatim}
 
 \noindent If \texttt{sys\_open} system call was successful, it is now time to write to the file. For this, the system call \texttt{sys\_write} will be used. The first instruction moves the value in \emph{eax} to \emph{ebx}. This is because the address of the file descriptor returned by \texttt{sys\_open} was saved in \emph{eax} and since \emph{eax} is where the system call number is saved, the address of the file descriptor must be moved to \emph{ebx} before the system call number is moved to \emph{eax}. The second instruction does just that. The third and fourth instructions places the address of the \texttt{textoutput} string in \emph{ecx} and the length of the string in \emph{edx}. Lastly the system call is invoked by the interrupt instruction and the string ``hello'' is written to the file.
 
 \begin{verbatim}
  exit:
-    mov eax, 1
-    mov ebx, 0	
-    int 0x80
+    mov eax, 1                              ; b8 01 00 00 00 
+    mov ebx, 0	                             ; bb 00 00 00 00 
+    int 0x80                                ; cd 80
 \end{verbatim}
 
 \noindent The last instructions invoke the \texttt{sys\_exit} system call which will terminate the current process. 
