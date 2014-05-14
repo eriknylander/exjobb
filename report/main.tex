@@ -64,7 +64,7 @@ After the release of a program, usually it takes a couple of weeks or sometimes 
 
 Anti-disassembly is the art of making a program difficult to disassemble. By utilizing different techniques, a program can be modified so that a disassembler produces erroneus output or no output at all. Several anti-disassembly techniques have been developed and used over the years but the search for better techniques goes on. 
 
-This thesis aims to investigate the use and possibilities of one such technique called \emph{Instruction overlapping}. \emph{Instruction overlapping} exploits the variable length of instructions in the x86 architecture and attempts to hide code inside other code to make a disassembler produce faulty output  while still maintaining the correct behaviour when the program is run. To investigate the practical uses of this technique, a tool will be implemented and tested to determine if \emph{Instruction overlapping} is a viable option for anti-disassembly and also how difficult such a tool would be to implement.
+This thesis aims to investigate the use and possibilities of one such technique called \emph{Instruction overlapping}. \emph{Instruction overlapping} exploits the variable length of instructions in the x86 architecture and attempts to hide code inside other code to make a disassembler produce faulty output  while still maintaining the correct behaviour when the program is run. To investigate the practical uses of this technique, a tool will be implemented and tested to determine if \emph{Instruction overlapping} is a viable option for anti-disassembly and also how such a tool could be implemented.
 
 
 \chapter{Background}
@@ -294,15 +294,14 @@ The main features considered for the tool were:
 
 \noindent All of these features were fully implemented or implemented to an extent in the final product. 
 
-\section{Input and Output}
-The tool was implemented so that a specific input generates an output in the form of a template for the obfuscated program read from the input. 
+\section{Usage}
+The tool was implemented so that a specific input generates an output in the form of a template for the obfuscated program generated from the input.  
 
 \subsection{Input}
 The intended input for the tool is a file containing the bytes representing an assembled program. The input file is assumed to be assembled in a way such that only the representation of the instructions are present in the input file, i.e. no code to make the program runable are added when the instructions are assembled.
 
-
 \subsection{Ouput}
-The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjusment part, former two will be explained further on.
+The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjusment part. The two latter parts will be explained further on.
 
 \section{Parsing and representing a program}
 In order to perform operations on a program it needs to be parsed and represented in some way. This part is done in two steps in the tool, first the input file is read and the bytes are stored in a \texttt{vector}, then the bytes are parsed and stored in \texttt{Instruction} objects. 
@@ -855,10 +854,18 @@ One solution could be to use a file assembled together with headers to make it r
 
 
 \subsection{Weaknesses in memory adjustment}
+As mentioned several times before, memory adjustment is a difficult problem. Sometimes the memory adjustment in the tool is sufficient to make a MEP execute without crashing but for the most part there are issues. Currently when memory is adjusted for, only one memory accessing instruction using a specific register is considered. In some cases more than one instruction tries to access memory using the same register which in the current implementation is ignored. On top of that, anything can happen to the register between the memory adjustment and the actual instruction that was adjusted for. 
 
+The problem with instructions between the memory adjustment and the instruction that was adjusted for could be counteracted by taking the in-between instruction into account when calculating what value that needs to be in the register for the memory accessing instruction to execute properly. 
+
+When it comes to several instructions using the same register for memory access, the situation is a bit more complicated. One solution could be to have a memory adjustment part for each of the memory accessing instructions. That way a conditional jump instruction to the memory adjustment part could be inserted in the MEP. In order no to break the behaviour of the HEP, the condition would be if the MEP is supposed to run or not. This of course means that the MEP has to be made to synchronize with the HEP before each of the problematic memory adjustment parts using for example \emph{nop} instructions. This solution is related to the \emph{Having more than one MEP} part in the \emph{Further development} section. 
 
 \subsection{Wrong encodings when assembling}
+In the x86 architecture, one instruction can have several different encoding. This is unfortunate because when the tool produces its output, it expects the instructions to be encoded using the same bytes that it uses when the output is assembled. 
 
+If however there is a difference between the encoding used in the tool and the one used by \texttt{nasm} the MEP looks like it is supposed to but the HEP will contain the wrong instructions which is a huge problem.
+
+One potential solution would be to not rely on \texttt{nasm} and print the bytes directly to a file. This ensures that the correct encoding is used. However, to make the output program runnable, headers would have to be added which would complicate the process immensely. 
 
 \section{Further development}
 In the following sections are some suggestions for improvements in the tool to make it better and less prone to unsuccesful obfuscations.
@@ -894,7 +901,6 @@ The primary use of the emulator, would be if a conditional jump instruction was 
 Another less obvious use could be to help with instruction substitution. As mentioned in the \emph{Implementation} section, instead of using 32 bit \emph{mov} instructions when moving values smaller than \texttt{0xFF}, eight bit \emph{mov} instructions could be used instead. The problem with this approach was that if a larger value than \texttt{0xFF} already was in the register, the wrong value would reside in the register since the eight bit \emph{mov} only would affect the least significant part of the register. The emulator could be used to emulate all the instructions before a 32 bit \emph{mov} and look at the value in the register to determine if the instruction could be replaced with its eight bit equivalent.
 
 \begin{itemize}
-\item{Smarter more thorough memory adjustment}
 \item{Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic}disassemblers.
 \end{itemize}
 
