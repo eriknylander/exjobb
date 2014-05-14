@@ -892,6 +892,9 @@ A far better solution would be to replace instructions in the HEP if they cause 
 This is an area in the tool that could be expanded which would contribute immensely to finding good MEPs. The way this would work is that when a problematic instruction is found in the MEP, the tool finds the instruction in the HEP the makes up the problematic instruction and replace it with some other instruction(s). This could be used to get rid of all kinds of instructions and if needed avoid difficult memory adjustments. Thankfully there are a lot of ways to do the same thing in x86. 
 
 \subsection{Adding code to fool dynamic disassemblers}
+A very important feature when using instruction overlapping is being able to determine if the MEP or HEP is to be executed. Because the MEP is only supposed to be executed when the program is being analysed. Since this is often done using a dynamic disassembler in a virtual machine. Thankfully there are ways to determine if a program is run on a virtual machine and whether a debugger is attached.
+
+If code for detecting a debugger or if the program was run on a virtual machine was added to the program, the execution of the MEP could be made to depend on that fact. This could should of course be provided by the tool.
 
 \subsection{Taking advantage of the emulator}
 \texttt{libemu} was first considered for the tool because of it emulation capabilities, however the tool does not use the emulator at all. 
@@ -899,10 +902,6 @@ This is an area in the tool that could be expanded which would contribute immens
 The primary use of the emulator, would be if a conditional jump instruction was found in the MEP. Then the instructions prior to the jump instruction could be emulated and the tool could inspect the \emph{eflags} register to determine if the jump would be taken. If that would be the case, the instruction in the HEP generating the jump in the MEP would have to be replaced. If not, the jump would be allowed to stay in the MEP since it would not compromise the control flow of the program.
 
 Another less obvious use could be to help with instruction substitution. As mentioned in the \emph{Implementation} section, instead of using 32 bit \emph{mov} instructions when moving values smaller than \texttt{0xFF}, eight bit \emph{mov} instructions could be used instead. The problem with this approach was that if a larger value than \texttt{0xFF} already was in the register, the wrong value would reside in the register since the eight bit \emph{mov} only would affect the least significant part of the register. The emulator could be used to emulate all the instructions before a 32 bit \emph{mov} and look at the value in the register to determine if the instruction could be replaced with its eight bit equivalent.
-
-\begin{itemize}
-\item{Add stuff regarding opaque predicates and functionality to add code for finding debuggers to fool dynamic}disassemblers.
-\end{itemize}
 
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
