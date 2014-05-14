@@ -904,7 +904,12 @@ The primary use of the emulator, would be if a conditional jump instruction was 
 Another less obvious use could be to help with instruction substitution. As mentioned in the \emph{Implementation} section, instead of using 32 bit \emph{mov} instructions when moving values smaller than \texttt{0xFF}, eight bit \emph{mov} instructions could be used instead. The problem with this approach was that if a larger value than \texttt{0xFF} already was in the register, the wrong value would reside in the register since the eight bit \emph{mov} only would affect the least significant part of the register. The emulator could be used to emulate all the instructions before a 32 bit \emph{mov} and look at the value in the register to determine if the instruction could be replaced with its eight bit equivalent.
 
 \chapter{Conclusion}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+While there are many obstacles in the way of successfully use instruction overlapping for code obfuscation it can still be used fairly well provided that tricks like adjusting for memory and being able to swap instructions are used. As for a tool, it is the author's opinion that it could work very well together with some modifications to the current tool aswell as the suggested features discussed in the \emph{Further development} part of the \emph{Discussion and further development} section.
+
+In conclusion, the main challenges when using instruction overlapping are instructions accessing memory, instructions that change the control flow of the program and that the MEP can synchronize with the HEP after an unsatisfactory amount of instructions. Fortunately all of these problems can be remedied in one way or another. By utilizing a smarter memory adjustment technique, perhaps using a memory adjustment section for each of the memory accessing instructions the problem of the MEP crashing can be avoided entirely. If instructions changing the control flow of the problem are found in the MEP, the emulator can be used to determine if they should be swapped or not. Lastly by using several MEPs, the program will be hidden and the problem of synchronization will be eliminated. 
+
+
+
 \bibliography{Bibliography}{}
 
 
