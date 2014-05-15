@@ -60,9 +60,9 @@ The software buisness is a very competitive field because it is very lucrative i
 
 Today it is not sufficient to only worry about other companies stealing or copying code, hackers and piracy is a big problem. It is also not sufficient to keep the source code secret only during the development. When a program is ready for release it is built and packaged and the source code is never made public in clear text. However, when a program is released, the built source code is contained in the executable binaries. These binaries are vulnerable because an adversary can use different kinds of disassemblers to go from the binary hexadecimal codes to assembly code. When the assembly code is made visible to the adversery, it can be analyzed and exploited. 
 
-After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key is calculated and then write a license key generator that produces a seemingly legitimate serial key and release it to the public so that anyone can use the program without buying it, causing a loss in revenue for the developer.
+After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key's validity is calculated, write a license key generator that produces a seemingly legitimate serial key by reverse-engineering the validity check. The program can then be relased to the public together with the license key generator so that anyone can use the program without buying it, causing a loss in revenue for the developer.
 
-Anti-disassembly is the art of making a program difficult to disassemble. By utilizing different techniques, a program can be modified so that a disassembler produces erroneus output or no output at all. Several anti-disassembly techniques have been developed and used over the years but the search for better techniques goes on. 
+One way of avoiding this problem is to use anti-disassembly. Anti-disassembly is the art of making a program difficult to disassemble and analyse. By utilizing different techniques, a program can be modified so that a disassembler produces erroneus output or no output at all. Several anti-disassembly techniques have been developed and used over the years but the search for better techniques goes on. 
 
 This thesis aims to investigate the use and possibilities of one such technique called \emph{Instruction overlapping}. \emph{Instruction overlapping} exploits the variable length of instructions in the x86 architecture and attempts to hide code inside other code to make a disassembler produce faulty output  while still maintaining the correct behaviour when the program is run. To investigate the practical uses of this technique, a tool will be implemented and tested to determine if \emph{Instruction overlapping} is a viable option for anti-disassembly and also how such a tool could be implemented.
 
@@ -230,7 +230,7 @@ $ objdump -D -b binary -mi386 -M intel example.o
 \noindent Here it is very clear that the linear sweep algorithm in \texttt{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \emph{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
 
 \subsubsection{Opaque predicates}
-Opaque predicates is a technique used to fool recursive traversal disassemblers and can be used together with junk byte insertion. The idea is to convert unconditional jump instructions in to conditional jump instructions but make it so that the jump is always taken at runtime. This forces the recursive traversal algorithm to consider both the target as well as the next instruction after the jump. By placing junk bytes directly after the jump instruction, the disassembler can be tricked into producing erroneous code.\cite{instructionoverlapping}
+Opaque predicates is a technique used to fool recursive traversal disassemblers and can be used together with junk byte insertion. The idea is to convert unconditional jump instructions into conditional jump instructions but make it so that the jump is always taken at runtime. This forces the recursive traversal algorithm to consider both the target as well as the next instruction after the jump. By placing junk bytes directly after the jump instruction, the disassembler can be tricked into producing erroneous code.\cite{instructionoverlapping}
 
 Modifying this technique could also fool a dynamic disassembler. Since a dynamic disassembler will disassemble the code while it is being run, it will only encounter the legitimate code and never reach the junk byte. However, this could be overcome by making the seemingly unconditional jump conditional. This might seem confusing but if one were to make the conditional jump depend on the fact that a debugger was present or not, one could make the jump be not taken if that was the case. Then the dynamic disassembler would be forced to disassemble the junk byte, making it produce faulty code.
 
@@ -258,7 +258,6 @@ When using cryptographic hash functions, the idea is similar. By using some key 
 
 Both of these approaches depend on finding certain values to make them work. The only way to do this is by doing an exhaustive search for suitable values which in turn requires a lot of computing power. If this search space could be divided among a large amount of hosts, time it would take to obtain the desired values would be greatly reduced. An interesting thing to note is that this kind of distributed computing mainly exist in botnets and that a programmer with a botnet at his disposal usually has malevolent purposes in mind. 
 
-
 \chapter{Instruction overlapping}
 \section{Overview}
 Instruction overlapping is the obfuscation technique of which the main focus of this thesis lies on. It is similar to instruction embedding in that it hides instructions inside others but it is also more advanced and a more elegant solution. In the case of instruction embedding, an instruction hides another and a jump is needed to execute the hidden instruction. This requires a large amount of jump instructions when a large amount of instructions are hidden which could seem suspisious to an analyser. At the same time, it would not stand a chance against a dynamic disassembler since the control flow of the program is followed and only the instructions executed are disassembled. Instruction overlapping in its simplest form attempts to overcome the former of this problem by making the code look normal. With a bit of tweaking it can also overcome the second problem by making the disassembler execute the non-hidden code.
@@ -266,14 +265,29 @@ Instruction overlapping is the obfuscation technique of which the main focus of 
 The main difference between instruction overlapping and instruction embedding is that instruction embedding hides one instruction inside another while in instruction overlapping, several instructions can be hidden inside several others. The main idea is that when looking at a program as a stream of bytes, if the program were to be run starting with the first byte in the stream, one execution path would be executed while if the program were to be run starting at an offset from the first byte, another execution path would be executed. The perfect scenario for this technique would be to have two completely executable paths (non of the executions paths crasches the program) so that the execution path starting at the first byte is the visible code (to the analyst) and the executions path starting at an offset is the hidden code. If this result was achieved, only one jump instruction into the hidded execution path would be needed to run the program as opposed to the case with instruction embedding where serveral jumps were needed. This would make the program look natural and not as suspisious which solves the problem with strange looking code when using instruction embedding.\cite{instructionoverlapping}
 
 \section{Overlapping instructions}
+Instructions are overlapping if one sequence of instructions $a$ can be extracted from another sequence of instructions $b$ by removing one or more of the bytes making up sequence $b$. For example, consider the following instructions:
 
+\begin{verbatim}
+    test dword [edi+0x10c383ff], 0x5b8      ; f7 87 ff 83 c3 10 b8 05 00 00
+    add [ebx-0xf7cfc40], al                 ; 00 83 c0 03 83 f0
+    add al, [ecx]                           ; 02 01
+    nop                                     ; 66 90
+\end{verbatim}
+
+\noindent If the instructions above make up sequence $b$, then sequence $a$ can be found inside $b$ by removing the bytes \texttt{f7 87 ff}:
+
+\begin{verbatim}
+    add ebx, 0x10                           ; 83 c3 10
+    mov eax, 0x5                            ; b8 05 00 00 00
+    add eax, 0x3                            ; 83 c0 03
+    xor eax, 0x2                            ; 83 f0 02
+    add [esi-0x70], esp                     ; 01 66 90
+\end{verbatim}
 
 \section{Main Execution Path and Hidden Execution Path} 
-As mentioned before, instruction overlapping relies on having two executable paths in one program, the \emph{Main-Executaion-Path}(from here on called MEP) and the \emph{Hidden-Execution-Path}(from here on called HEP). The MEP is the path visible to an analyst and the HEP will consist of the program that is hidden.  
+As mentioned before, instruction overlapping relies on having two executable paths in one program, the \emph{Main-Executaion-Path}(from here on called MEP) and the \emph{Hidden-Execution-Path}(from here on called HEP). The MEP is the path visible to an analyst and the HEP will consist of the program that is hidden. In the example in the previous section, sequence $b$ is the MEP and sequence $a$ is the HEP.
 
-
-
-
+Upon execution, to access the HEP, a jump instruction has to be placed before the MEP to change the control flow of the program so that program counter will find the next instruction starting at the first byte of the HEP. This will allow the HEP to be executed while remaining hidden if the program is disassembled using a linear sweep disassembler.   
 
 
 \chapter{Implementation}
