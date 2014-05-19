@@ -1,3 +1,7 @@
+/**
+* emulator.cpp
+*/
+
 #include "emulator.h"
 #include <iostream>
 #include <iterator>

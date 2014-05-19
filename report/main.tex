@@ -940,9 +940,392 @@ In conclusion, the main challenges when using instruction overlapping are instru
 
 
 %%%%%%%%%%%%%%%%%%
-%\appendix
+\appendix
 %%%%%%%%%%%%%%%%%%
-%\chapter{Test Appendix}
+\chapter{The code}
+\section{\texttt{program.cpp}}
 
+\begin{Verbatim}[fontsize=\tiny]
+program.cpp - This is the main program of the tool
+
+
+
+/**
+* Compares two instructions a and b based on their bytes
+* @param insa Instruction a
+* @param insb Instruction b
+* @return true if the instructions are equal, false otherwise
+*/
+bool InstructionCompare(Instruction &insa, Instruction &insb)
+
+
+
+/**
+* Prints a program in its hexadecimal form
+* @param program the program to print
+*/
+void printProgram(vector<BYTE> program)
+
+
+
+/**
+* Prints a vector in its hexadecimal form with the instructions divided
+* @param instructions the instructions to print
+*/
+void printInstructions(vector<Instruction> instructions)
+
+
+
+/**
+* Build a vector of pair<Opcode, OpcodeMetaData> objects containing all possible starting bytes between 
+* 0x00 and 0xFFFFFF
+* @return the vector of Opcode and OpcodeMetaData pairs 
+*/
+vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
+
+
+
+/**
+* Takes a vector of Instruction objects and returns is as a vector of bytes
+* @param instructions the vector of Instruction objects
+* @return a vector of bytes
+*/
+vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
+
+
+
+/**
+* Inserts the starting bytes in an Opcode object before the HEP, checks when the MEP synchronizes with the HEP 
+* and returns the number of hidden instructions
+* @param p the Parser object used to check if the new MEP contains invalid instructions
+* @param e the Emulator object used to build the new MEP
+* @param hep the HEP in the form of Instruction objects
+* @param mepProgram the MEP in the form of bytes
+* @param opc the Opcode object containing the starting bytes
+* @param opc_meta the OpcodeMetaData object containing information about the Opcode object
+* @return the number of hidden instructions
+*/
+int checkSyncConditionsAndReturnSyncNumber(Parser &p, Emulator &e, 
+                                           vector<Instruction> &hep, vector<BYTE> &mepProgram, 
+                                           Opcode &opc, OpcodeMetaData &opc_meta)
+
+
+
+/**
+* Inserts the starting bytes in an Opcode object and calculates how many registers that are used for memory access
+* @param e the Emulator object used to build the new MEP
+* @param hep the HEP in the form of Instruction objects
+* @param mepProgram the MEP in the form of bytes
+* @param opc the Opcode object containing the starting bytes
+* @param opc_meta the OpcodeMetaData object containing information about the Opcode object
+* @return the number of registers used to access memory
+*/
+int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, 
+                                Opcode &opc, OpcodeMetaData &opc_meta)
+
+
+
+
+/**
+* The main method responsible for obfuscating a program. Takes an input file, obfuscates it an outputs a template
+* for the obfuscated program. The arguments are made up of the path to the input file, the number of instructions
+* in the input file and if 32 bit mov substitution should be used.
+*/
+int main(int argc, char* argv[])
+\end{Verbatim}
+
+\subsection{\texttt{Opcode}}
+\begin{Verbatim}[fontsize=\tiny]
+/**
+* Opcode is a struct used for saving starting bytes
+*/
+
+
+
+/**
+* Returns a string with the starting bytes in hexadecimal form
+*/	
+string getOpcodeString()
+
+
+
+/**
+* Returns the number of starting bytes in the Opcode struct
+*/
+int getOpcodeSize()
+
+\end{Verbatim}
+
+\subsection{\texttt{OpcodeMetaData}}
+\begin{Verbatim}[fontsize=\tiny]
+/**
+* OpcodeMetaData is a struct for saving various information about an Opcode struct
+*/
+
+
+
+/**
+* Creates an OpcodeMetaData struct
+*/
+OpcodeMetaData()
+
+
+
+/**
+* Calculates the number of registers used for memory access by a MEP created with an Opcode struct
+* @return the number of registers
+*/
+int getNumberOfRecurringRegisters()
+
+
+
+/**
+* Prints the all purpose registers and how many times they are used for memory access
+*/
+void printRecurringRegisters()
+
+\end{Verbatim}
+
+\section{\texttt{emulator.cpp}}
+\begin{Verbatim}[fontsize=\tiny]
+emulator.cpp - This the Emulator class wrapping functionality from libemu
+
+/**
+* Creates an Emulator
+*/
+Emulator::Emulator() 
+
+
+
+/**
+* Emulator destructor
+*/
+Emulator::~Emulator()
+
+
+
+/**
+* Loads a vector of bytes in the memory of the emulator 
+* @param instructionBytes the vector of bytes to load in memory
+*/
+void Emulator::loadProgramInMemory(vector<unsigned char> instructionBytes)
+
+
+
+/**
+* Parses the bytes in the memory of the Emulator and places them in Instruction objects
+* @return vector of Instruction objects
+*/
+vector<Instruction> Emulator::getInstructionVector()
+
+
+
+/**
+* Parses a vector of bytes to form an Instruction object.
+* @param insBytes the bytes to parse
+* @param ret the Instruction object to store the result in
+* @return true if the bytes make up a valid instruction
+*/
+bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
+
+
+
+/**
+* Performs the preface and substitutes 32 bit LEA instructions
+* @param program the vector containing the program
+* @param preface a vector of Instruction objects to store the result of the preface in
+* @param hep a vector to store the HEP in
+*/
+void Emulator::doPreface(vector<unsigned char> program, vector<Instruction> &preface, vector<Instruction> &hep)
+
+
+
+/**
+* Replaces 32 bit LEA instructions by placing the LEA in the preface and an add instruction in the HEP
+* @param ins The Instruction object containing the LEA instruction
+* @param preface the vector to store the preface part of the substitution in
+* @param hep the vector to store the HEP part in 
+*/
+void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<Instruction> &hep)
+
+
+
+/**
+* Memory adjustment to make the MEP able to run without crashing
+* @param memoryAdjustment the vector to store the memory adjustment part in
+* @param mep the MEP
+*/
+void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vector<Instruction> &mep)
+
+
+
+/**
+* Substitutes a 32 bit MOV instruction
+* @param a The instruction to substitute
+* @return vector of Instruction objects that makes up the substitution
+*/
+vector<Instruction> Emulator::substituteMov(Instruction &a)
+
+
+
+/**
+* Optimizes the HEP by replacing 32 bit MOV instructions. 
+* @param the HEP
+* @return the new optimized HEP
+*/
+vector<Instruction> Emulator::optimizeHep(vector<Instruction> hep)
+
+
+
+/**
+* Emulates the instructions in the memory of the Emulator and returns the value of the EFLAGS register
+*/
+int Emulator::runAndGetEFlags() 
+
+
+
+/**
+* Prints a debug message with register and memory information
+*/
+void Emulator::printDebug()
+\end{Verbatim}
+
+\section{\texttt{parser.cpp}}
+\begin{Verbatim}[fontsize=\tiny]
+parser.cpp - This class wraps functionality in Udis86 and is responsible for reading the input file
+
+
+
+/*
+* Creates a parser object and sets up the Udis86 object for parsing and disassembly
+*/
+Parser::Parser()
+
+
+
+/**
+* Reads an input file using Udis86 and places the bytes in a vector
+* 
+* @param fileName  the path of the input file
+* @param numberOfInstructions the number of instructions to read from the input file
+* @return a vector containing the bytes making up the input file
+*/
+vector<unsigned char> Parser::parseFile(char fileName[], int numberOfInstructions)
+
+
+
+/**
+* Disassembles a vector of bytes and returns the number of valid instructions
+* @param buffer the vector containing the bytes
+* @return the number of valid instructions
+*/
+int Parser::parseUntilInvalid(vector<BYTE> buffer)
+
+
+
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param preface the vector containing the bytes in the preface
+*/
+
+void Parser::parseAndPrintPreface(vector<BYTE> preface)
+
+
+
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param memoryAdjustment the vector containing the bytes in the memory adjustment part
+*/
+void Parser::parseAndPrintMemoryAdjustment(vector<BYTE> memoryAdjustment)
+
+
+
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param mep the vector containing the bytes in the program
+* @param startingOpcodeSize the number of starting bytes
+* @param index an index for the mep
+*/
+void Parser::parseAndPrintProgram(vector<BYTE> mep, int startingOpcodeSize, int index)
+
+
+
+/**
+* Prints a return statement in assembly language
+*/
+void Parser::printProgramReturn()
+\end{Verbatim}
+
+\section{\texttt{instruction.cpp}}
+\begin{Verbatim}[fontsize=\tiny]
+instruction.cpp - This class wraps the emu_instruction struct from libemu
+
+
+
+/**
+* Constructs an Instruction object
+* @param ins struct containing characteristics of the instruction, gathered using libemu
+* @param info struct containing other characteristics of the instruction, gathered using libemu
+* @param legalInstruction shows if the instruction can be in the MEP without crashing it
+* @param bytes the bytes making up the instruction
+*
+*/
+Instruction::Instruction(struct emu_instruction ins, struct emu_cpu_instruction_info info, 
+                         bool legalInstruction, std::vector<BYTE> bytes)
+
+
+
+/**
+* Constructs an empty Instruction object
+*/
+Instruction::Instruction()
+
+
+
+/**
+* Returns the emu_instruction struct of the Instruction object
+* @return the emu_instruction struct
+*/
+struct emu_instruction Instruction::getInstruction()
+
+
+
+/**
+* Returns the emu_cpu_instruction_info struct of the Instruction object
+* @return the emu_cpu_instruction_info struct
+*/
+struct emu_cpu_instruction_info Instruction::getInstructionInfo()
+
+
+
+/**
+* Return the legalInstruction value
+* @return the legalInstruction value
+*/
+bool Instruction::isLegal()
+
+
+
+/**
+* Returns the bytes making up the instruction
+* @return the bytes making up the instruction
+*/
+std::vector<BYTE> Instruction::getBytes()
+
+
+
+/**
+* Prints the instruction in hexadecimal form
+*/
+void Instruction::printInstruction()
+
+
+
+/**
+* Returns the instruction as a string in hexadecimal form 
+* @return the string to return
+*/
+std::string Instruction::getByteString()
+\end{Verbatim}
 
 \end{document}

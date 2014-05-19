@@ -1,8 +1,0 @@
-Preface - byt ut jobbiga, långa instruktioner. Dela upp ursprungsprogrammet i två delar, preface och hep. Lägg nödvändiga saker som får visas i preface, lägg resten i hep och göm hep.
-
-Bygg databas för substituering av instruktioner.
-
-Iterativ obfuskering - välj en eller flera bytes att ha i början av programmet så att mepen gömmer så mycket som möjligt utan att synkas med hepen. Gå så lång som det går utan att hitta illegala instruktioner. Byt ut instruktionerna som orsakar problem och loopa.
-
-
-Skriv fucking dödsrapport på nåt magiskt vänster.

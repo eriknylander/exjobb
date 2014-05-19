@@ -1,3 +1,7 @@
+/**
+* program.cpp
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <utility>
@@ -15,9 +19,17 @@ typedef unsigned char BYTE;
 
 using namespace std;
 
+
+/**
+* Opcode is a struct used for saving starting bytes
+*/
 struct Opcode 
 {
 	vector<BYTE> bytes;
+
+	/**
+	* Returns a string with the starting bytes in hexadecimal form
+	*/
 	string getOpcodeString() {
 		stringstream ss;
 		for(vector<BYTE>::iterator itr = bytes.begin(); itr != bytes.end(); ++itr) {
@@ -27,14 +39,23 @@ struct Opcode
 		return ss.str();
 	}
 
+	/**
+	* Returns the number of starting bytes in the Opcode struct
+	*/
 	int getOpcodeSize() {
 		return bytes.size();
 	}
 };
 
+/**
+* OpcodeMetaData is a struct for saving various information about an Opcode struct
+*/
 struct OpcodeMetaData
 {
 
+	/**
+	* Creates an OpcodeMetaData struct
+	*/
 	OpcodeMetaData() {
 		for (int i = 0; i < 8; i++) {
 			usedRegs[i] = 0;
@@ -47,6 +68,11 @@ struct OpcodeMetaData
 	int syncNumber;
 	int numberOfRecurringRegisters;
 	bool usesSib;
+
+	/**
+	* Calculates the number of registers used for memory access by a MEP created with an Opcode struct
+	* @return the number of registers
+	*/
 	int getNumberOfRecurringRegisters() {
 		int min = -1;
 
@@ -59,6 +85,9 @@ struct OpcodeMetaData
 		return min;
 	}
 
+	/**
+	* Prints the all purpose registers and how many times they are used for memory access
+	*/
 	void printRecurringRegisters() {
 		for(int i = 0; i < 8; i++) {
 			printf("usedRegs[%d] = %d\n", i, usedRegs	[i]);
