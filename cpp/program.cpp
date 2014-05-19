@@ -66,8 +66,12 @@ struct OpcodeMetaData
 	}	
 };
 
-
-
+/**
+* Compares two instructions a and b based on their bytes
+* @param insa Instruction a
+* @param insb Instruction b
+* @return true if the instructions are equal, false otherwise
+*/
 bool InstructionCompare(Instruction &insa, Instruction &insb) {
 	
 	vector<BYTE> aBytes = insa.getBytes();
@@ -95,6 +99,11 @@ bool InstructionCompare(Instruction &insa, Instruction &insb) {
 	
 }
 
+
+/**
+* Prints a program in its hexadecimal form
+* @param program the program to print
+*/
 void printProgram(vector<BYTE> program) 
 {
 	for(vector<BYTE>::iterator itr = program.begin(); itr != program.end(); ++itr) {
@@ -104,6 +113,10 @@ void printProgram(vector<BYTE> program)
 	cout << endl;
 }
 
+/**
+* Prints a vector in its hexadecimal form with the instructions divided
+* @param instructions the instructions to print
+*/
 void printInstructions(vector<Instruction> instructions)
 {
 	stringstream ss;
@@ -116,6 +129,10 @@ void printInstructions(vector<Instruction> instructions)
 	cout << ss.str() << endl;
 }
 
+/**
+* Build a vector of pair<Opcode, OpcodeMetaData> objects containing all possible starting bytes between 0x00 and 0xFFFFFF
+* @return the vector of Opcode and OpcodeMetaData pairs 
+*/
 vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
 {
 	vector<pair<Opcode, OpcodeMetaData> > startingBytes;
@@ -180,6 +197,11 @@ vector<pair<Opcode, OpcodeMetaData> > buildStartingBytesVector()
 	return startingBytes;	
 }
 
+/**
+* Takes a vector of Instruction objects and returns is as a vector of bytes
+* @param instructions the vector of Instruction objects
+* @return a vector of bytes
+*/
 vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
 {
 	vector<BYTE> byteVector;
@@ -252,6 +274,18 @@ vector<BYTE> getBytesFromInstructions(vector<Instruction> instructions)
 // 	return maxSyncedAfter;
 // }
 
+
+/**
+* Inserts the starting bytes in an Opcode object before the HEP, checks when the MEP synchronizes with the HEP 
+* and returns the number of hidden instructions
+* @param p the Parser object used to check if the new MEP contains invalid instructions
+* @param e the Emulator object used to build the new MEP
+* @param hep the HEP in the form of Instruction objects
+* @param mepProgram the MEP in the form of bytes
+* @param opc the Opcode object containing the starting bytes
+* @param opc_meta the OpcodeMetaData object containing information about the Opcode object
+* @return the number of hidden instructions
+*/
 int checkSyncConditionsAndReturnSyncNumber(Parser &p, Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, Opcode &opc, OpcodeMetaData &opc_meta)
 {
 	int validBytesHep = p.parseUntilInvalid(getBytesFromInstructions(hep));
@@ -340,6 +374,15 @@ int checkSyncConditionsAndReturnSyncNumber(Parser &p, Emulator &e, vector<Instru
 // 	return minNumberOfRecurringRegisters;
 // }
 
+/**
+* Inserts the starting bytes in an Opcode object and calculates how many registers that are used for memory access
+* @param e the Emulator object used to build the new MEP
+* @param hep the HEP in the form of Instruction objects
+* @param mepProgram the MEP in the form of bytes
+* @param opc the Opcode object containing the starting bytes
+* @param opc_meta the OpcodeMetaData object containing information about the Opcode object
+* @return the number of registers used to access memory
+*/
 int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BYTE> &mepProgram, Opcode &opc, OpcodeMetaData &opc_meta)
 {
 	
@@ -370,8 +413,11 @@ int calculateRecurringRegisters(Emulator &e, vector<Instruction> &hep, vector<BY
 }
 
 
-
-
+/**
+* The main method responsible for obfuscating a program. Takes an input file, obfuscates it an outputs a template
+* for the obfuscated program. The arguments are made up of the path to the input file, the number of instructions
+* in the input file and if 32 bit mov substitution should be used.
+*/
 int main(int argc, char* argv[]) {
 
 	if(argc < 4) {
