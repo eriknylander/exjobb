@@ -6,9 +6,20 @@
 
 typedef unsigned char BYTE;
 
+/**
+* Constructs an Instruction object
+* @param ins struct containing characteristics of the instruction, gathered using libemu
+* @param info struct containing other characteristics of the instruction, gathered using libemu
+* @param legalInstruction shows if the instruction can be in the MEP without crashing it
+* @param bytes the bytes making up the instruction
+*
+*/
 Instruction::Instruction(struct emu_instruction ins, struct emu_cpu_instruction_info info, bool legalInstruction, std::vector<BYTE> bytes) : m_ins(ins), 
 								m_info(info), m_legalInstruction(legalInstruction), m_bytes(bytes){}
 
+/**
+* Constructs an empty Instruction object
+*/
 Instruction::Instruction() {}
 
 struct emu_instruction Instruction::getInstruction() 

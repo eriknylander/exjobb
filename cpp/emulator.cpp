@@ -4,6 +4,9 @@
 
 using namespace std;
 
+/**
+* Creates an Emulator
+*/
 Emulator::Emulator() 
 {
 	e = emu_new();
@@ -16,11 +19,19 @@ Emulator::Emulator()
 	}
 }
 
+
+/**
+* Emulator destructor
+*/
 Emulator::~Emulator() 
 {
 	emu_free(e);
 }
 
+/**
+* Loads a vector of bytes in the memory of the emulator 
+* @param instructionBytes the vector of bytes to load in memory
+*/
 void Emulator::loadProgramInMemory(vector<unsigned char> instructionBytes)
 {
 	m_memory = instructionBytes;
@@ -33,7 +44,10 @@ void Emulator::loadProgramInMemory(vector<unsigned char> instructionBytes)
 	emu_memory_write_byte(mem, static_offset+i, 0xcc);
 }
 
-
+/**
+* Parses the bytes in the memory of the Emulator and places them in Instruction objects
+* @return vector of Instruction objects
+*/
 vector<Instruction> Emulator::getInstructionVector()
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
@@ -60,6 +74,12 @@ vector<Instruction> Emulator::getInstructionVector()
 	return v;
 }
 
+/**
+* Parses a vector of bytes to form an Instruction object.
+* @param insBytes the bytes to parse
+* @param ret the Instruction object to store the result in
+* @return true if the bytes make up a valid instruction
+*/
 bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
 {
 
@@ -103,6 +123,12 @@ bool Emulator::getInstruction(vector<unsigned char> insBytes, Instruction &ret)
 
 }
 
+/**
+* Performs the preface and substitutes 32 bit LEA instructions
+* @param program the vector containing the program
+* @param preface a vector of Instruction objects to store the result of the preface in
+* @param hep a vector to store the HEP in
+*/
 void Emulator::doPreface(vector<unsigned char> program, vector<Instruction> &preface, vector<Instruction> &hep)
 {
 	loadProgramInMemory(program);
@@ -132,6 +158,12 @@ void Emulator::doPreface(vector<unsigned char> program, vector<Instruction> &pre
 // 	return mostSignificant + leastSignificant;
 // }
 
+/**
+* Replaces 32 bit LEA instructions by placing the LEA in the preface and an add instruction in the HEP
+* @param ins The Instruction object containing the LEA instruction
+* @param preface the vector to store the preface part of the substitution in
+* @param hep the vector to store the HEP part in 
+*/
 void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<Instruction> &hep)
 {
 	int modMask = 0xC0;
@@ -196,6 +228,11 @@ void Emulator::replaceLEA(Instruction ins, vector<Instruction> &preface, vector<
 	
 }
 
+/**
+* Memory adjustment to make the MEP able to run without crashing
+* @param memoryAdjustment the vector to store the memory adjustment part in
+* @param mep the MEP
+*/
 void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vector<Instruction> &mep)
 {
 	
@@ -308,6 +345,11 @@ void Emulator::adjustForMemoryAccess(vector<Instruction> &memoryAdjustment, vect
 
 }
 
+/**
+* Substitutes a 32 bit MOV instruction
+* @param a The instruction to substitute
+* @return vector of Instruction objects that makes up the substitution
+*/
 vector<Instruction> Emulator::substituteMov(Instruction &a) {
 	vector<Instruction> ret;
 
@@ -373,6 +415,11 @@ vector<Instruction> Emulator::substituteMov(Instruction &a) {
 
 }
 
+/**
+* Optimizes the HEP by replacing 32 bit MOV instructions. 
+* @param the HEP
+* @return the new optimized HEP
+*/
 vector<Instruction> Emulator::optimizeHep(vector<Instruction> hep) {
 	vector<Instruction> retVector;
 
@@ -394,6 +441,9 @@ vector<Instruction> Emulator::optimizeHep(vector<Instruction> hep) {
 	return retVector;
 }
 
+/**
+* Emulates the instructions in the memory of the Emulator and returns the value of the EFLAGS register
+*/
 int Emulator::runAndGetEFlags() 
 {
 	emu_cpu_eip_set(emu_cpu_get(e), static_offset);
@@ -402,6 +452,9 @@ int Emulator::runAndGetEFlags()
 	return emu_cpu_eflags_get(emu_cpu_get(e));
 }
 
+/**
+* Prints a debug message with register and memory information
+*/
 void Emulator::printDebug()
 {
 	emu_cpu_debug_print(emu_cpu_get(e));

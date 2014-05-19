@@ -39,11 +39,11 @@
 \frontmatter
 %%%%% Abstract
 \chapter*{Abstract}
-The abstract. The abstract. The abstract. The abstract. The
-abstract. The abstract. The abstract. The abstract. The abstract. The
-abstract. The abstract. The abstract. The abstract. The abstract. The
-abstract. The abstract. The abstract. The abstract. The abstract. The
-abstract. The abstract. The abstract. The abstract.
+This report describes the implementation of a code obfuscation tool using instruction overlapping. Instruction overlapping is a technique used to hide code inside other code to throw off various disassemblers. If a commercial product would be obfuscated using instruction overlapping it could potentially be protected from being copied and spread on the Internet.
+
+The tool was implemented and tested using different programs with varying results. While some tests showed promising results, the tool proved to be lacking in others. To make the tool stronger, improvements has been thought out and suggested.
+
+While there are problems when using instruction overlapping, the technique shows promise and a tool could certainly be implemented. With the suggested improvements, the tool should be able to achieve a satisfying level of obfuscation for any program. 
 
 %% ToC
 \tableofcontents
@@ -60,7 +60,7 @@ The software buisness is a very competitive field because it is very lucrative i
 
 Today it is not sufficient to only worry about other companies stealing or copying code, hackers and piracy is a big problem. It is also not sufficient to keep the source code secret only during the development. When a program is ready for release it is built and packaged and the source code is never made public in clear text. However, when a program is released, the built source code is contained in the executable binaries. These binaries are vulnerable because an adversary can use different kinds of disassemblers to go from the binary hexadecimal codes to assembly code. When the assembly code is made visible to the adversery, it can be analyzed and exploited. 
 
-After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key's validity is calculated, write a license key generator that produces a seemingly legitimate serial key by reverse-engineering the validity check. The program can then be relased to the public together with the license key generator so that anyone can use the program without buying it, causing a loss in revenue for the developer.
+After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key's validity is calculated, write a license key generator that produces a seemingly legitimate serial key by reverse-engineering the validity check. The program can then be released to the public together with the license key generator so that anyone can use the program without buying it, causing a loss in revenue for the developer.
 
 One way of avoiding this problem is to use anti-disassembly. Anti-disassembly is the art of making a program difficult to disassemble and analyse. By utilizing different techniques, a program can be modified so that a disassembler produces erroneus output or no output at all. Several anti-disassembly techniques have been developed and used over the years but the search for better techniques goes on. 
 
@@ -227,25 +227,31 @@ $ objdump -D -b binary -mi386 -M intel example.o
    8:	cd 80                	int    0x80
 \end{verbatim}
 
-\noindent Here it is very clear that the linear sweep algorithm in \texttt{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \emph{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
+\noindent Here it is very clear that the linear sweep algorithm in \texttt{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \texttt{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
 
 \subsubsection{Opaque predicates}
 Opaque predicates is a technique used to fool recursive traversal disassemblers and can be used together with junk byte insertion. The idea is to convert unconditional jump instructions into conditional jump instructions but make it so that the jump is always taken at runtime. This forces the recursive traversal algorithm to consider both the target as well as the next instruction after the jump. By placing junk bytes directly after the jump instruction, the disassembler can be tricked into producing erroneous code.\cite{instructionoverlapping}
 
 Modifying this technique could also fool a dynamic disassembler. Since a dynamic disassembler will disassemble the code while it is being run, it will only encounter the legitimate code and never reach the junk byte. However, this could be overcome by making the seemingly unconditional jump conditional. This might seem confusing but if one were to make the conditional jump depend on the fact that a debugger was present or not, one could make the jump be not taken if that was the case. Then the dynamic disassembler would be forced to disassemble the junk byte, making it produce faulty code.
 
-\begin{verbatim}
-example
-\end{verbatim}
 
 \subsubsection{Instruction embedding}
 Instruction embedding\cite{instructionembedding} is an interesting obfuscation technique because it effectively hides one or more instructions inside another instruction. An instruction \emph{a} embeds an instruction \emph{b} if the last \emph{x} bytes of \emph{a} consist of all the bytes in \emph{b}. The most important part of any obfuscation technique is to not change the behaviour of the program, luckily, the x86 architecture allows jumps into the middle of an instruction. This means that a jump can be made into the embedding instruction so that the next instruction to be run is actually the embedded instruction.
 
-Since the embedding instruction must be able to contain the entirety of the embedded instruction there are constraints on what instruction can be embedded and which instructions they can be embedded in. The best instructions to use as embedding instructions are those that utilize both a 32-bit displacement value and a 32-bit immediate value, then it will contain 8 bytes that are fully customizable which means that an instruction with the length of 8 bytes can be embedded.
+Since the embedding instruction must be able to contain the entirety of the embedded instruction there are constraints on what instruction can be embedded and which instructions they can be embedded in. The best instructions to use as embedding instructions are those that utilize both a 32-bit displacement value and a 32-bit immediate value, then it will contain 8 bytes that are fully customizable which means that an instruction with the length of 8 bytes can be embedded. Consider the following instruction:
 
 \begin{verbatim}
-example
+    lea esi, 0x12345678                     ; 8d 35 78 56 34 12
 \end{verbatim}
+
+\noindent If the byte \texttt{8d} would be removed, the following instruction would be found:
+
+\begin{verbatim}
+    xor eax, 0x12345678                     ; 35 78 56 34 12
+\end{verbatim}
+
+\noindent In this example, the instruction \texttt{xor eax, 0x12345678} is embedded in the instruction \texttt{lea esi, 0x12345678}.
+
 
 
 
@@ -287,7 +293,13 @@ Instructions are overlapping if one sequence of instructions $a$ can be extracte
 \section{Main Execution Path and Hidden Execution Path} 
 As mentioned before, instruction overlapping relies on having two executable paths in one program, the \emph{Main-Executaion-Path}(from here on called MEP) and the \emph{Hidden-Execution-Path}(from here on called HEP). The MEP is the path visible to an analyst and the HEP will consist of the program that is hidden. In the example in the previous section, sequence $b$ is the MEP and sequence $a$ is the HEP.
 
-Upon execution, to access the HEP, a jump instruction has to be placed before the MEP to change the control flow of the program so that program counter will find the next instruction starting at the first byte of the HEP. This will allow the HEP to be executed while remaining hidden if the program is disassembled using a linear sweep disassembler.   
+Upon execution, to access the HEP, a jump instruction has to be placed before the MEP to change the control flow of the program so that program counter will find the next instruction starting at the first byte of the HEP. This will allow the HEP to be executed while remaining hidden if the program is disassembled using a linear sweep disassembler. 
+
+To fool a dynamic disassembler is a little more difficult but it is possible. To do this, the MEP has to be executed since a dynamic disassembler only disassembles the instructions that are run. Analysis of programs are often done on virtual machines to protect the host system from potentially harmful programs. This is very good for the sake of instruction overlapping since there are ways for a program to find out if it is run with a debugger attatched or on a virtual machine. The jump into the HEP can then be made to depend on this fact.
+
+Unfortunately this makes up one of the main challenges when using instruction overlapping namely that the MEP must be able to run without crashing. Since the MEP is generated by inserting bytes in front of the HEP, there is little control to be had over the instructions in the MEP once the bytes to put before the HEP has been chosen.  Certain type of instructions are not suitable in a MEP, memory accessing instructions for example could very easily make the program crash. Other undesireable instructions are jump instructions  and interrupts.
+
+The other main challenge is that because of the variable instruction length in the x86 architecture, the MEP tends to synchronize with the HEP after a number of instructions. This is a problem because once the MEP has synchronized with the HEP, the remaining instructions of the program are out in the open.  
 
 
 \chapter{Implementation}
@@ -298,7 +310,7 @@ The tool was implemented using C++ with some additional C-libraries. The choice 
 The main features considered for the tool were:
 
 \begin{itemize}
-\item{Being able to parsing and represent a program}
+\item{Being able to parse and represent a program}
 \item{Being able to insert one or more bytes before the instructions in the HEP to optain a MEP}
 \item{Being able to determine which of the inserted bytes generates the longest and best MEP}
 \item{Swapping instructions in the HEP if illegal or unsuitable instructions are found in the correspondig place in the MEP}
@@ -344,17 +356,17 @@ If the address of \texttt{somedata} in the example above was \texttt{0x12345678}
 What happens in \texttt{doPreface()} when it encounters a similar \emph{lea} instruction is that it removes the instructions from the HEP. It then proceeds to add a \emph{lea} instruction with the same destination register but with the label of the data minus 1 as the source operand. After that, an ADD instruction adding 1 to the destination register of the \emph{lea} instruction is added to the HEP where the original \emph{lea} instruction was located. For example:
 
 \begin{verbatim}
-lea eax, [somedata]
+    lea eax, [somedata]
 \end{verbatim}
 
 \noindent becomes:
 
 \begin{verbatim}
 preface:
-	lea eax, [somedata-1]
+    lea eax, [somedata-1]
 
 hep:
-	add eax, 1
+    add eax, 1
 \end{verbatim}
 
 \noindent The result is that the program behaves like it did prior to the change but the HEP will be easier to hide while the \emph{lea} instruction and the data which address is loaded is somewhat hidden.
@@ -854,7 +866,7 @@ The reason for the crash of the MEP is an issue that arise when labels are used.
 
 By time the execution has reached the \texttt{int 0x80} instruction, the number in \emph{eax} is not related to any system call. Because of this, when the interrupt instruction is executed, a negative number is placed in \emph{eax}. Since there is a \texttt{jl exit} instruction in the HEP depending on whether the value in \emph{eax} is smaller than zero and the MEP has synced with the HEP by this time, the jump is taken, causing a segmentation fault because the program is not allowed to access the memory address in the jump instruction. 
 
-When obfuscating \texttt{writetofile} with the 32 bit \emph{mov} substitution the situation grew even more bleak. Only two instructions (actually only one and a half because of the \emph{mov} substitution) was hidden. On top of that the program could not be run because it could not be linked to be executable. \texttt{nasm} was able to assemble the program but \texttt{ld}\cite{ld} could not link it and produced an error message instead. The cause of this problem is the \texttt{jecxz 0x28c31de8} instruction which will be discussed in \emph{Known problems}.
+When obfuscating \texttt{writetofile} with the 32 bit \emph{mov} substitution the situation grew even more bleak. Only two instructions (actually only one and a half because of the \emph{mov} substitution) was hidden. On top of that the program could not be run because it could not be linked to be executable. \texttt{nasm} was able to assemble the program but \texttt{ld}\cite{ld} could not link it and produced an error message instead. The cause of this problem is the \texttt{jecxz 0x28c31de8} instruction.
 
 \section{Known problems}
 These are some problem discovered during the implementation of the tool. They will be explained below and in some cases potential solutions will be suggested.
@@ -864,7 +876,7 @@ The problem with labels has been touched on already in previous sections. It is 
 
 One solution could be to use a file assembled together with headers to make it runnable, where the labels have been translated into correct memory addresses as input to the tool. The tool would then have to ignore the instructions having to do with the headers and find the instructions that needs to be hidden. Then the tool could perform the same operations as it does currently but hopefully without the label problem. 
 
-\subsection{Errors caused by jecxz}
+%\subsection{Errors caused by jecxz}
 
 
 \subsection{Weaknesses in memory adjustment}

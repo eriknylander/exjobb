@@ -8,6 +8,10 @@
 
 using namespace std;
 
+
+/*
+* Creates a parser object and sets up the Udis86 object for parsing and disassembly
+*/
 Parser::Parser() 
 {
    ud_init(&ud_obj);
@@ -16,6 +20,13 @@ Parser::Parser()
    ud_set_mode(&ud_obj, 32);
 }
 
+/**
+* Reads an input file using Udis86 and places the bytes in a vector
+* 
+* @param fileName  the path of the input file
+* @param numberOfInstructions the number of instructions to read from the input file
+* @return a vector containing the bytes making up the input file
+*/
 vector<unsigned char> Parser::parseFile(char fileName[], int numberOfInstructions) 
 {
 
@@ -36,6 +47,12 @@ vector<unsigned char> Parser::parseFile(char fileName[], int numberOfInstruction
 	return program;
 }
 
+
+/**
+* Disassembles a vector of bytes and returns the number of valid instructions
+* @param buffer the vector containing the bytes
+* @return the number of valid instructions
+*/
 int Parser::parseUntilInvalid(vector<BYTE> buffer) {
   ud_set_input_buffer(&ud_obj, buffer.data(), buffer.size());
 
@@ -58,6 +75,11 @@ int Parser::parseUntilInvalid(vector<BYTE> buffer) {
 
 }
 
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param preface the vector containing the bytes in the preface
+*/
+
 void Parser::parseAndPrintPreface(vector<BYTE> preface) {
   printf("PROGRAM!!!\n\nBITS 32\nsection .data\n;ALLOCATE DATA HERE\n");
   printf(";Don't forget data for memory access adjustment\nsection .text\n\tglobal _start\n_start:\n;preface\n");
@@ -71,6 +93,10 @@ void Parser::parseAndPrintPreface(vector<BYTE> preface) {
   }
 }
 
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param memoryAdjustment the vector containing the bytes in the memory adjustment part
+*/
 void Parser::parseAndPrintMemoryAdjustment(vector<BYTE> memoryAdjustment) {
   printf("\n;Memory adjustment stuff (Change 0xdeadc0de to according memory access adjusment label)\n");
 
@@ -82,6 +108,12 @@ void Parser::parseAndPrintMemoryAdjustment(vector<BYTE> memoryAdjustment) {
   }
 }
 
+/**
+* Disassembles a vector of bytes and prints the instructions in assembly language
+* @param mep the vector containing the bytes in the program
+* @param startingOpcodeSize the number of starting bytes
+* @param index an index for the mep
+*/
 void Parser::parseAndPrintProgram(vector<BYTE> mep, int startingOpcodeSize, int index)
 {
 
@@ -95,6 +127,9 @@ void Parser::parseAndPrintProgram(vector<BYTE> mep, int startingOpcodeSize, int 
   }
 }
 
+/**
+* Prints a return statement in assembly language
+*/
 void Parser::printProgramReturn() 
 {
    printf("mov eax, 1\nmov ebx, 0\nint 0x80\n");
