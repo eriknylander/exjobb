@@ -48,7 +48,7 @@ While there are problems when using instruction overlapping, the technique shows
 %% ToC
 \tableofcontents
 %\cleardoublepage
-%\listoffigures
+\listoffigures
 \listoftables
 \cleardoublepage
 %%%%% Page numbering for the main thesis
@@ -331,7 +331,7 @@ The intended input for the tool is a file containing the bytes representing an a
 The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjustment part. The two latter parts will be explained further on.
 
 \section{The algorithm}
-The algorithm used by the tool is described below:
+The main steps of the algorithm implemented in the tool currently is described in Figure \ref{fig:mainsteps}. The algorithm is described in more detail in the pseudo code below:
 
 \begin{Verbatim}[fontsize=\tiny]
 Read and parse input file. Store in HEP vector
@@ -360,6 +360,7 @@ while no good MEP is found:
 		Insert starting bytes first in MEP
 		Calculate number of memory accesing instructions using
 		registers to access memory and save minimum
+		Remove starting bytes in MEP
 
 	for each starting bytes:
 		Remove starting bytes with more than the minimum amount
@@ -380,6 +381,12 @@ Adjust for memory access
 Print template for obfuscated program
 
 \end{Verbatim}
+
+\begin{figure}[here]
+\includegraphics[scale=0.32]{firstpartcurrent.eps}
+\caption{Flowchart for the main steps of the algorithm}
+\label{fig:mainsteps}
+\end{figure}
 
 \noindent The algorithm above is the one used in the current implementation. The ideal algorithm for the tool is described below:
 
