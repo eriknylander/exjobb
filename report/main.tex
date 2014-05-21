@@ -56,9 +56,9 @@ While there are problems when using instruction overlapping, the technique shows
 %%%%%
 
 \chapter{Introduction}
-The software buisness is a very competitive field because it is very lucrative in this day and age. In order to generate the biggest revenue, a software company must provide software that goes beyond what products from other companies are doing. To do so, the source code must be exclusive and only known by people inside the company. The alternative is to have source code that is public domain but provide a service to use the code with that no other company can provide. 
+The software business is a very competitive field because it is very lucrative in this day and age. In order to generate the highest revenue, a software company must provide software that goes beyond what products from other companies are doing. To do so, the source code must be exclusive and only known by people inside the company. The alternative is to have source code that is public domain but provide a service to use the code with that no other company can provide. 
 
-Today it is not sufficient to only worry about other companies stealing or copying code, hackers and piracy is a big problem. It is also not sufficient to keep the source code secret only during the development. When a program is ready for release it is built and packaged and the source code is never made public in clear text. However, when a program is released, the built source code is contained in the executable binaries. These binaries are vulnerable because an adversary can use different kinds of disassemblers to go from the binary hexadecimal codes to assembly code. When the assembly code is made visible to the adversery, it can be analyzed and exploited. 
+Today it is not sufficient to only worry about other companies stealing or copying code, hackers and piracy is a big problem. It is also not sufficient to keep the source code secret only during the development. When a program is ready for release it is built and packaged and the source code is never made public in clear text. However, when a program is released, the built source code is contained in the executable binaries. These binaries are vulnerable because an adversary can use different kinds of disassemblers to go from the binary hexadecimal codes to assembly code. When the assembly code is made visible to the adversary, it can be analyzed and exploited. 
 
 After the release of a program, usually it takes a couple of weeks or sometimes days for a hacker to copy the program and release it on the Internet. It is not unusual for a program to solely rely on license keys in order to make the program usable only to those who has bought it. The way a hacker can exploit this is to disassemble the binary files, find out how the license key's validity is calculated, write a license key generator that produces a seemingly legitimate serial key by reverse-engineering the validity check. The program can then be released to the public together with the license key generator so that anyone can use the program without buying it, causing a loss in revenue for the developer.
 
@@ -94,7 +94,7 @@ IA-32 is the third generation of  x86 microprocessor architectures made by Intel
 With the new 32-bit architecture and Protected Mode, the Intel 80386 could address up to 4 gigabytes of memory. However, when using Protected Mode, all programs are assigned a certain amount of memory to use in order to prevent programs from interfering with each other and any attempt to access memory outside of the allotted amount results in a segmentation fault.
 
 \subsection{The IA-32 instruction set}
-Being a CISC architechture, the instruction set for IA-32 contains a very large amount of instructions which can be roughly divided into the following categories:\cite{x86quickguide}\cite{artofassembly} 
+Being a CISC architecture, the instruction set for IA-32 contains a very large amount of instructions which can be roughly divided into the following categories:\cite{x86quickguide}\cite{artofassembly} 
 
 \begin{description}
 \item[Data movement instructions] Instructions to move data around between memory or registers. 
@@ -122,10 +122,10 @@ Prefix & Opcode & Mod-Reg-R/M & SIB & Displacement & Immediate \\ \hline
 
 \begin{description}
 \item[Prefix] This is an optional field used to add prefixes to certain instructions in order to override segment sizes, operand sizes and so on.
-\item[Opcode] The opcode consists of 1-2 bytes and is the instruction code that determines the type of instruction. Some instructions contains only of this field.
+\item[Opcode] The opcode consists of 1-2 bytes and is the instruction code that determines the type of instruction. Some instructions only contain this field.
 \item[Mod-Reg-R/M] The Mod-Reg-R/M byte is used in a couple of different ways, mainly to determine if an instruction will access memory or registers. This field will be explained in more detail later.  
 \item[SIB] SIB stands for \emph{Scale-Index-Base} and is used to enable index-based addressing of memory. This field will be explained in more detail later.
-\item[Displacement] The displacement field is used to access memory with a displacement. If the mod-reg-r/m-byte gives the register that the memory address will be collected from, the displacement field will determine a value to add to the address before accessing the memory.
+\item[Displacement] The displacement field is used to access memory with a displacement. If the Mod-Reg-R/M-byte gives the register that the memory address will be collected from, the displacement field will determine a value to add to the address before accessing the memory.
 \item[Immediate] Instructions that uses some kind of immediate value gathers this value from this field instead of picking one from a register or memory.
 \end{description}
 
@@ -148,10 +148,10 @@ Mod & Reg & R/M \\
 \noindent \uline{Mod}\\
 The two \emph{Mod} bits determines if the instruction shall access memory at an address stored in a register and also if a displacement shall be added to the address.\\
 \begin{description}
-\item[00] The processor will use indirect addressing mode. The address will be collected from the register specified by the r/m bits. Two exceptions are when the r/m field is \emph{100} or \emph{101}.  
+\item[00] The processor will use indirect addressing mode. The address will be collected from the register specified by the \emph{R/M} bits. Two exceptions are when the \emph{R/M} field is \emph{100} or \emph{101}.  
 \item[01] Indirect addressing mode but an 8-bit displacement will be added to the address before it is dereferenced.
 \item[10] Indirect addressing mode but a 32-bit diplacement will be added to the address before it is dereferenced.
-\item[11] Direct addressing mode, no memory will be acccessed. Both the reg and r/m fields will denote registers.
+\item[11] Direct addressing mode, no memory will be acccessed. Both the \emph{Reg} and \emph{R/M} fields will denote registers.
 \end{description}
 
 \noindent \uline{Reg}\\
@@ -159,7 +159,7 @@ The \emph{Reg} field will denote a register: \\ 000 - eax, 001 - ecx, 010 - edx,
 
 
 \noindent \uline{R/M}\\
-The \emph{R/M} field will denote a register just like the reg field. It also denotes the register from which an address will be dereferenced. There are two exceptions to this, namely if the mod bits are 00 and if the r/m bits are 100, then the SIB byte will be used when accessing memory or when the r/m bits are 101, then a displacement value will be dereferenced instead.
+The \emph{R/M} field will denote a register just like the reg field. It also denotes the register from which an address will be dereferenced. There are two exceptions to this, namely if the mod bits are 00 and if the \emph{R/M} bits are \emph{100}, then the SIB byte will be used when accessing memory or when the \emph{R/M} bits are \emph{101}, then a displacement value will be dereferenced instead.
 
 \subsubsection{The SIB byte}
 The SIB byte like the Mod-Reg-R/M byte also contains three fields of bits called \emph{Scale}, \emph{Index} and \emph{Base}, see Table \ref{table:sibbyte}. As mentioned before, this byte enables index-based memory access. When the SIB byte is used, the address being accessed will be calculated as follows:
@@ -190,10 +190,9 @@ The two \emph{Scale} bits determines what value the \emph{Index} value will be m
 \noindent \uline{Index and Base}\\
 The \emph{Index} and \emph{Base} fields both denotes registers encoded in the same way as the \emph{Reg} and \emph{R/M} fields in the Mod-Reg-R/M byte. \cite{bittwiddling}\cite{assemblylanguagex86}
 
-\section{Code obfuscation}
-Code obfuscation is the action of deliberately making code harder to analyze, interpret and recreate. In the case of machine code, the idea is to make the code hard to disassemble correctly and hard for humans to read and understand once it has been disassembled. The creator of some program can choose to obfuscate their code for a variety of reasons, both benign and malevolent e.g a legitimate programmer may want to hide certain parts of a program, for example which ports the program listens to or the algorithm that determines if a serial code is correct while on the other hand  a hacker might  want to make his virus harder to analyze which could delay the analysis of the virus and the creation of a fix which in turn would let the virus infect a larger number of hosts. By achieving a high level of obfuscation, the risk of a program getting cracked, copied and spread on the internet is greatly reduced. It will also be less susceptible to hacker attacks since an adversary will have a difficult time finding security flaws to exploit.
 
-\subsection{Disassemblers}
+
+\section{Disassemblers}
 There are generally two different kinds of disassemblers namely static disassemblers and dynamic disassemblers. Static disassemblers use either a linear sweep algorithm or a recursive traversal algorithm to decode the instructions in a program. A linear sweep disassembler works in such a way that it reads the program byte after byte, decoding instructions as they come along. A clear advantage with this approach is that the entire program can be disassembled in a single sweep. It is also fairly quick since it only depends on the size of the program. The perhaps most critical disadvantage this approach has is that it does not take the control flow of the program in to account causing it to misinterpret things like data embedded in the stream of instructions.
 
 Recursive traversal disassemblers works such that whenever they encounter a function call or a branch instruction it calculates the possible target address of the instruction, marks the current address as visited and then proceeds to recursively call its disassembler function with the potential target addresses of the current instruction. If it encounters an address that has already been visited, the function returns. This enables the disassembler to avoid interpreting embedded data as executable instructions.
@@ -202,10 +201,14 @@ A dynamic disassembler executes the code at the same time as it disassembles the
 
 Since an analyst can use different kinds of disassemblers, the obfuscator must take the weaknesses of each in account when obfuscating the code in order to achieve a high level of obfuscation to confuse the analyst.
 
-\subsection{Obfuscation techniques}
+\chapter{Code obfuscation}
+\section{What is code obfuscation}
+Obfuscating code is the action of deliberately making code harder to analyze, interpret and recreate. In the case of machine code, the idea is to make the code hard to disassemble correctly and hard for humans to read and understand once it has been disassembled. The creator of some program can choose to obfuscate their code for a variety of reasons, both benign and malevolent e.g., a legitimate programmer may want to hide certain parts of a program, for example which ports the program listens to or the algorithm that determines if a serial code is correct while on the other hand  a hacker might  want to make his virus harder to analyze which could delay the analysis of the virus and the creation of a fix which in turn would let the virus infect a larger number of hosts. By achieving a high level of obfuscation, the risk of a program getting cracked, copied and spread on the internet is greatly reduced. It will also be less susceptible to hacker attacks since an adversary will have a difficult time finding security flaws to exploit.
+
+\section{Some obfuscation techniques}
 Over the years, several obfuscation techniques have been invented and employed, ranging from simple tricks to confuse linear sweep disassemblers to sophisticated self modifying code. Some notable approaches will be presented below.
 
-\subsubsection{Junk byte insertion}
+\subsection{Junk byte insertion}
 This obfuscation technique aims to exploit the weakness of linear sweep disassemblers by embedding data among the executable instructions. Upon disassembly, the disassembler will interpret the junkbyte as the opcode to the start of an instruction, which could cause the following bytes to be interpreted as the rest of the instruction. This would make the program look completely different from the program written without the junkbyte. Note that a recursive traversal disassembler follow the control flow of the program so that it never encounters the junk byte. An example of junk byte insertion is displayed below.\cite{instructionoverlapping}
 \\
 \\
@@ -229,13 +232,13 @@ $ objdump -D -b binary -mi386 -M intel example.o
 
 \noindent Here it is very clear that the linear sweep algorithm in \texttt{objdump} interpreted the data byte 0x8d as the the opcode for the x86 \emph{Load Effective Address} instruction making the disassembled code look different from the code that was actually written. An important thing to note is that the junk byte must be placed so that it will never be reached, potentially causing the program to crash. Another important thing to notice in this example is the fact that the instruction \texttt{int 0x80} appears in both code snippets. This is due to the fact that the disassembler tends to synchronize with the correct code in a few instructions (one in this case) because of the variable length of x86 instructions.  
 
-\subsubsection{Opaque predicates}
+\subsection{Opaque predicates}
 Opaque predicates is a technique used to fool recursive traversal disassemblers and can be used together with junk byte insertion. The idea is to convert unconditional jump instructions into conditional jump instructions but make it so that the jump is always taken at runtime. This forces the recursive traversal algorithm to consider both the target as well as the next instruction after the jump. By placing junk bytes directly after the jump instruction, the disassembler can be tricked into producing erroneous code.\cite{instructionoverlapping}
 
 Modifying this technique could also fool a dynamic disassembler. Since a dynamic disassembler will disassemble the code while it is being run, it will only encounter the legitimate code and never reach the junk byte. However, this could be overcome by making the seemingly unconditional jump conditional. This might seem confusing but if one were to make the conditional jump depend on the fact that a debugger was present or not, one could make the jump be not taken if that was the case. Then the dynamic disassembler would be forced to disassemble the junk byte, making it produce faulty code.
 
 
-\subsubsection{Instruction embedding}
+\subsection{Instruction embedding}
 Instruction embedding\cite{instructionembedding} is an interesting obfuscation technique because it effectively hides one or more instructions inside another instruction. An instruction \emph{a} embeds an instruction \emph{b} if the last \emph{x} bytes of \emph{a} consist of all the bytes in \emph{b}. The most important part of any obfuscation technique is to not change the behaviour of the program, luckily, the x86 architecture allows jumps into the middle of an instruction. This means that a jump can be made into the embedding instruction so that the next instruction to be run is actually the embedded instruction.
 
 Since the embedding instruction must be able to contain the entirety of the embedded instruction there are constraints on what instruction can be embedded and which instructions they can be embedded in. The best instructions to use as embedding instructions are those that utilize both a 32-bit displacement value and a 32-bit immediate value, then it will contain 8 bytes that are fully customizable which means that an instruction with the length of 8 bytes can be embedded. Consider the following instruction:
@@ -252,10 +255,7 @@ Since the embedding instruction must be able to contain the entirety of the embe
 
 \noindent In this example, the instruction \texttt{xor eax, 0x12345678} is embedded in the instruction \texttt{lea esi, 0x12345678}.
 
-
-
-
-\subsubsection{Using cryptographic hash functions or pseudo-random number generators}
+\subsection{Using cryptographic hash functions or pseudo-random number generators}
 These two approaches both stem from the same idea, namely to generate the code at runtime so that it is never visible to an analyst using a static disassembler. Because the code is generated first when the program is run, it is only present at runtime and only in memory, which means that there is no code to analyze when the program is not being run.
 
 In the case of using pseudo-random number generators, the basic idea is to find a seed \emph{s} to a built-in pseudo random number generator \emph{G} on the host such that a number of consecutive calls to \emph{G} will generate the desired bytes. This is often very hard to do since the probability of finding such a seed is very small, especially as the number of desired bytes grow in size. Because of this the method can be altered by using different kinds of mappings between the generated numbers and the desired bytes.\cite{prng}
@@ -264,13 +264,12 @@ When using cryptographic hash functions, the idea is similar. By using some key 
 
 Both of these approaches depend on finding certain values to make them work. The only way to do this is by doing an exhaustive search for suitable values which in turn requires a lot of computing power. If this search space could be divided among a large amount of hosts, time it would take to obtain the desired values would be greatly reduced. An interesting thing to note is that this kind of distributed computing mainly exist in botnets and that a programmer with a botnet at his disposal usually has malevolent purposes in mind. 
 
-\chapter{Instruction overlapping}
-\section{Overview}
+\section{Instruction overlapping}
 Instruction overlapping is the obfuscation technique of which the main focus of this thesis lies on. It is similar to instruction embedding in that it hides instructions inside others but it is also more advanced and a more elegant solution. In the case of instruction embedding, an instruction hides another and a jump is needed to execute the hidden instruction. This requires a large amount of jump instructions when a large amount of instructions are hidden which could seem suspisious to an analyser. At the same time, it would not stand a chance against a dynamic disassembler since the control flow of the program is followed and only the instructions executed are disassembled. Instruction overlapping in its simplest form attempts to overcome the former of this problem by making the code look normal. With a bit of tweaking it can also overcome the second problem by making the disassembler execute the non-hidden code.
 
 The main difference between instruction overlapping and instruction embedding is that instruction embedding hides one instruction inside another while in instruction overlapping, several instructions can be hidden inside several others. The main idea is that when looking at a program as a stream of bytes, if the program were to be run starting with the first byte in the stream, one execution path would be executed while if the program were to be run starting at an offset from the first byte, another execution path would be executed. The perfect scenario for this technique would be to have two completely executable paths (non of the executions paths crasches the program) so that the execution path starting at the first byte is the visible code (to the analyst) and the executions path starting at an offset is the hidden code. If this result was achieved, only one jump instruction into the hidded execution path would be needed to run the program as opposed to the case with instruction embedding where serveral jumps were needed. This would make the program look natural and not as suspisious which solves the problem with strange looking code when using instruction embedding.\cite{instructionoverlapping}
 
-\section{Overlapping instructions}
+\subsection{Overlapping instructions}
 Instructions are overlapping if one sequence of instructions $a$ can be extracted from another sequence of instructions $b$ by removing one or more of the bytes making up sequence $b$. For example, consider the following instructions:
 
 \begin{verbatim}
@@ -290,7 +289,7 @@ Instructions are overlapping if one sequence of instructions $a$ can be extracte
     add [esi-0x70], esp                     ; 01 66 90
 \end{verbatim}
 
-\section{Main Execution Path and Hidden Execution Path} 
+\subsection{Main Execution Path and Hidden Execution Path} 
 As mentioned before, instruction overlapping relies on having two executable paths in one program, the \emph{Main-Executaion-Path}(from here on called MEP) and the \emph{Hidden-Execution-Path}(from here on called HEP). The MEP is the path visible to an analyst and the HEP will consist of the program that is hidden. In the example in the previous section, sequence $b$ is the MEP and sequence $a$ is the HEP.
 
 Upon execution, to access the HEP, a jump instruction has to be placed before the MEP to change the control flow of the program so that program counter will find the next instruction starting at the first byte of the HEP. This will allow the HEP to be executed while remaining hidden if the program is disassembled using a linear sweep disassembler. 
@@ -299,7 +298,9 @@ To fool a dynamic disassembler is a little more difficult but it is possible. To
 
 Unfortunately this makes up one of the main challenges when using instruction overlapping namely that the MEP must be able to run without crashing. Since the MEP is generated by inserting bytes in front of the HEP, there is little control to be had over the instructions in the MEP once the bytes to put before the HEP has been chosen.  Certain type of instructions are not suitable in a MEP, memory accessing instructions for example could very easily make the program crash. Other undesireable instructions are jump instructions  and interrupts.
 
-The other main challenge is that because of the variable instruction length in the x86 architecture, the MEP tends to synchronize with the HEP after a number of instructions. This is a problem because once the MEP has synchronized with the HEP, the remaining instructions of the program are out in the open.  
+The other main challenge is that because of the variable instruction length in the x86 architecture, the MEP tends to synchronize with the HEP after a number of instructions. This is a problem because once the MEP has synchronized with the HEP, the remaining instructions of the program are out in the open. 
+
+\subsection{Instruction overlapping using NOP instructions} 
 
 
 \chapter{Implementation}
@@ -327,7 +328,119 @@ The tool was implemented so that a specific input generates an output in the for
 The intended input for the tool is a file containing the bytes representing an assembled program. The input file is assumed to be assembled in a way such that only the representation of the instructions are present in the input file, i.e. no code to make the program runable are added when the instructions are assembled.
 
 \subsection{Ouput}
-The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjusment part. The two latter parts will be explained further on.
+The output of the tools is presented as a template for the obfuscated program that was generated from the input file. It contains aside from the instructions a data section where data is allocated, a preface part and a memory adjustment part. The two latter parts will be explained further on.
+
+\section{The algorithm}
+The algorithm used by the tool is described below:
+
+\begin{Verbatim}[fontsize=\tiny]
+Read and parse input file. Store in HEP vector
+Do preface substituting 32 bit lea instructions
+
+If mov substitution parameter is set:
+	Substitute all 32 bit mov instruction in HEP vector
+
+Build vector containing all possible starting bytes between 00 and FFFFFF
+
+while no good MEP is found:
+	for each starting bytes:
+		Copy HEP bytes to MEP
+		Insert starting bytes first in MEP
+		Check how many instructions are hidden and save the 
+		largest number
+
+		Remove starting bytes in MEP
+
+	for each starting bytes:
+		Remove starting bytes with fewer hidden instructions 
+		than the maximum
+
+	for each starting bytes:
+		Copy HEP bytes to MEP
+		Insert starting bytes first in MEP
+		Calculate number of memory accesing instructions using
+		registers to access memory and save minimum
+
+	for each starting bytes:
+		Remove starting bytes with more than the minimum amount
+		of registers to access memory 
+
+		Remove starting bytes generating MEPs containing 
+		instructions using SIB bytes
+
+	if starting bytes is empty:
+		insert nop instruction first in the HEP and loop
+	else:
+		break 
+
+Insert last starting bytes before the HEP
+
+Adjust for memory access
+
+Print template for obfuscated program
+
+\end{Verbatim}
+
+\noindent The algorithm above is the one used in the current implementation. The ideal algorithm for the tool is described below:
+
+\begin{Verbatim}[fontsize=\tiny]
+Read and parse input file. Store in HEP vector
+
+Build vector containing all possible starting bytes between 00 and FFFFFF
+
+for each starting bytes:
+	Copy HEP bytes to MEP
+	Insert starting bytes first in MEP
+	Check how many instructions are hidden and save the 
+	largest number
+
+	Remove starting bytes in MEP
+
+for each starting bytes:
+	Remove starting bytes with fewer hidden instructions 
+	than the maximum
+
+for each starting bytes:
+	Copy HEP bytes to MEP
+	Insert starting bytes first in MEP
+	Calculate number of memory accessing instructions and keep track
+	of what registers they use.
+
+	remove starting bytes in MEP
+
+Find what starting bytes generating the MEP(s) not using a register
+for memory access more than once
+
+if found:
+	Pick the best starting bytes and insert first in the MEP
+else:
+	Pick the second best starting bytes and insert first in the MEP
+
+Optimize_MEP:
+while MEP contains problematic instructions and MEP synchronizes with HEP
+      and threshold not reached:
+	Look for instructions causing problems(Instructions using 
+	SIB bytes, instructions causing the MEP to synchronize with 
+	the HEP, unconditional jump instructions, etc)
+	if found:
+		Replace instruction causing the problem in the HEP
+	if conditional jump found:
+		Emulate instructions before jump instruction and check flags
+		if the jump will be taken:
+			Replace instruction in HEP causing the jump
+		else:
+			Proceed
+
+If threshold was reached:
+	If MEP still synchronizes with HEP:
+		Generate new MEP by inserting new starting bytes before the 
+		synchronizing instruction.
+		GOTO Optimize_MEP
+
+Adjust for memory access
+Print template for obfuscated program adding code for fooling
+dynamic disassemblers.
+\end{Verbatim}
 
 \section{Parsing and representing a program}
 In order to perform operations on a program it needs to be parsed and represented in some way. This part is done in two steps in the tool, first the input file is read and the bytes are stored in a \texttt{vector}, then the bytes are parsed and stored in \texttt{Instruction} objects. 
@@ -335,13 +448,13 @@ In order to perform operations on a program it needs to be parsed and represente
 Since the parsing and representation of x86 instructions would be very time consuming to implement, two different third party C libraries were used, Udis86 and Libemu. 
 
 \subsection{Udis86}
-Udis86 is a disassembler library for x86 written in C. It is used to disassemble a stream of bytes and presenting them result both in hexadecimal byte form aswell as in assembly language. It can disassemble bytes coming from either a byte array or directly from a file. In the tool it is used to read a file and return the bytes and to present the output.\cite{udis}
+Udis86\cite{udis} is a disassembler library for x86 written in C. It is used to disassemble a stream of bytes and presenting them result both in hexadecimal byte form aswell as in assembly language. It can disassemble bytes coming from either a byte array or directly from a file. In the tool it is used to read a file and return the bytes and to present the output.
 
 
 \subsection{Libemu}
-Libemu is a C library used for emulation. It provides the tools to build code analysis programs tailored to specific needs. The library contains an advanced emulator capable of executing a stream of instructions and present the resulting outcome. Alongside the emulator, Libemu offers debugging capabilities.
+Libemu\cite{libemu} is a C library used for emulation. It provides the tools to build code analysis programs tailored to specific needs. The library contains an advanced emulator capable of executing a stream of instructions and present the resulting outcome. Alongside the emulator, Libemu offers debugging capabilities.
 
-The tool uses Libemu to parse a stream of bytes and store them in Libemu's internal instruction object. The reason for using an instruction object as opposed to only using the bytes and derive the data necessary from them is that this offers an extra layer of abstraction so that all the instructions can be handled the same way instead of having to utilize ad-hoc style handling for each different type of instruction. The tool wraps the internal instruction object to add some capabilities.\cite{libemu}
+The tool uses Libemu to parse a stream of bytes and store them in Libemu's internal instruction object. The reason for using an instruction object as opposed to only using the bytes and derive the data necessary from them is that this offers an extra layer of abstraction so that all the instructions can be handled the same way instead of having to utilize ad-hoc style handling for each different type of instruction. The tool wraps the internal instruction object to add some capabilities.
 
 \section{"Preface"}
 Some instructions are very long, therefore they are difficult to hide. At the same time they often seem to make the MEP sync with the HEP. In order to avoid this behaviour the tool uses a few tricks to substitute these kinds of instructions by moving them out of the HEP and replace them with other instructions that makes the program behave the same but makes the HEP easier to hide. 
@@ -401,7 +514,7 @@ After the sync number has been calculated for every \texttt{Opcode} object, the 
 
 
 \subsection{Ranking the starting bytes}
-After the starting bytes generating the longest MEP have been found, the evaluation of the remaining starting bytes continues. This part of the evaluation looks more at the actual instructions in the generated MEPS and their characteristics. Starting bytes with MEPs containing undesireable instructions are removed. The different kinds of undesireable instructions are described below.
+After the starting bytes generating the longest MEP have been found, the evaluation of the remaining starting bytes continues. This part of the evaluation looks more at the actual instructions in the generated MEPs and their characteristics. Starting bytes with MEPs containing undesireable instructions are removed. The different kinds of undesireable instructions are described below.
 
 \subsubsection{Instructions using SIB bytes}
 The SIB byte is used for index-based memory access. Firstly, all kinds of memory access in the MEP is undesireable but in some instances they can be remedied by adjusting for memory access which will be explained later. The problem with the use of SIB bytes is that they involve more than one register when calculating the memory address being accessed by the instruction. This means that both of the registers must contain values such that the calculated address is one that the program is allowed to access. This makes further usage of said registers in other registers difficult.
@@ -417,7 +530,7 @@ When instructions using SIB bytes or when interrupting instructions are present 
 \section{Memory access adjusment}
 As mentioned before, instructions accessing memory in the MEP needs to be taken care of in order not to crash the program when the MEP is executed. Because there is very little control to be had over the MEP once the proper starting bytes have been choosed, the memory addresses being accessed by certain instructions cannot be changed. Since said addresses can be virtually any number in the range of \texttt{0x00000000 - 0xFFFFFFFF} the probability of a certain address being accessible without rendering a segmentation fault is very, very small and running a MEP without handling this in some way would most likely end up in a crash.  In order to change this behaviour and enable the MEP to run without crashing, the memory addresses that the instructions attempts to access needs to be adjusted for so that they may be accessed without crashing the program. 
 
-In the tool, this is implemented in a fairly simple manor. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector<Instruction>}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
+In the tool, this is implemented in a fairly simple manner. When the starting bytes have been chosen and the MEP has been generated, the program being operated on resides in two \texttt{vector<Instruction>}'s, namely \texttt{preface} and \texttt{mep}. At this point a new \texttt{vector<Instruction> memoryAdjustment} is created and a function \texttt{adjustForMemoryAccess()} where \texttt{mep} and \texttt{memoryAdjustment} are passed as references is called. In this function, all the instructions accessing memory are found and adjusted for.\\
 
 \noindent When an instruction accessing memory has been found (that has not been adjusted for earlier or affected by a \emph{lea} substitution), the adjustment works like this:
 \begin{enumerate}
@@ -602,7 +715,7 @@ When both of the test programs had been written and tested they were assembled w
 The following will be presented in the result:
 \begin{description}
 \item[Replacing mov] This field shows if the tool was run with 32 bit \emph{mov} substitution or not
-\item[Instructions hidden] This field shows the percentage of instructions in the input program that were hidden by the tool. Calculated by dividing the number of instructions in the input program not shown in the ouput by the total number of instructions in the input program.
+\item[Instructions hidden] This field shows the percentage of instructions in the input program that were hidden by the tool. Calculated by dividing the number of instructions in the input program not shown in the output by the total number of instructions in the input program.
 \item[HEP functional] This field shows if the HEP is functional when the output from the tool is run.
 \item[MEP functional] This field shows if the MEP runs without crashing.
 \end{description}
@@ -872,7 +985,7 @@ When obfuscating \texttt{writetofile} with the 32 bit \emph{mov} substitution th
 These are some problem discovered during the implementation of the tool. They will be explained below and in some cases potential solutions will be suggested.
 
 \subsection{The label problem}
-The problem with labels has been touched on already in previous sections. It is a big problem since it involves all uses of labels Since this breaks the behaviour of the HEP and in most cases results in a segmentation error causing the program to crash it is a big problem that needs a solution. 
+The problem with labels has been touched on already in previous sections. It is a big problem since it involves all uses of labels. Since this breaks the behaviour of the HEP and in most cases results in a segmentation error causing the program to crash it is a big problem that needs a solution. 
 
 One solution could be to use a file assembled together with headers to make it runnable, where the labels have been translated into correct memory addresses as input to the tool. The tool would then have to ignore the instructions having to do with the headers and find the instructions that needs to be hidden. Then the tool could perform the same operations as it does currently but hopefully without the label problem. 
 
@@ -884,10 +997,10 @@ As mentioned several times before, memory adjustment is a difficult problem. Som
 
 The problem with instructions between the memory adjustment and the instruction that was adjusted for could be counteracted by taking the in-between instruction into account when calculating what value that needs to be in the register for the memory accessing instruction to execute properly. 
 
-When it comes to several instructions using the same register for memory access, the situation is a bit more complicated. One solution could be to have a memory adjustment part for each of the memory accessing instructions. That way a conditional jump instruction to the memory adjustment part could be inserted in the MEP. In order no to break the behaviour of the HEP, the condition would be if the MEP is supposed to run or not. This of course means that the MEP has to be made to synchronize with the HEP before each of the problematic memory adjustment parts using for example \emph{nop} instructions. This solution is related to the \emph{Having more than one MEP} part in the \emph{Further development} section. 
+When it comes to several instructions using the same register for memory access, the situation is a bit more complicated. One solution could be to have a memory adjustment part for each of the memory accessing instructions. That way a conditional jump instruction to the memory adjustment part could be inserted in the MEP. In order not to break the behaviour of the HEP, the condition would be if the MEP is supposed to run or not. This of course means that the MEP has to be made to synchronize with the HEP before each of the problematic memory adjustment parts using for example \emph{nop} instructions. This solution is related to the \emph{Having more than one MEP} part in the \emph{Further development} section. 
 
 \subsection{Wrong encodings when assembling}
-In the x86 architecture, one instruction can have several different encoding. This is unfortunate because when the tool produces its output, it expects the instructions to be encoded using the same bytes that it uses when the output is assembled. 
+In the x86 architecture, one instruction can have several different encodings. This is unfortunate because when the tool produces its output, it expects the instructions to be encoded using the same bytes that it uses when the output is assembled. 
 
 If however there is a difference between the encoding used in the tool and the one used by \texttt{nasm} the MEP looks like it is supposed to but the HEP will contain the wrong instructions which is a huge problem.
 
@@ -923,14 +1036,14 @@ A very important feature when using instruction overlapping is being able to det
 If code for detecting a debugger or if the program was run on a virtual machine was added to the program, the execution of the MEP could be made to depend on that fact. This could should of course be provided by the tool.
 
 \subsection{Taking advantage of the emulator}
-\texttt{libemu} was first considered for the tool because of it emulation capabilities, however the tool does not use the emulator at all. 
+\texttt{libemu} was first considered for the tool because of its emulation capabilities, however the tool does not use the emulator at all. 
 
 The primary use of the emulator, would be if a conditional jump instruction was found in the MEP. Then the instructions prior to the jump instruction could be emulated and the tool could inspect the \emph{eflags} register to determine if the jump would be taken. If that would be the case, the instruction in the HEP generating the jump in the MEP would have to be replaced. If not, the jump would be allowed to stay in the MEP since it would not compromise the control flow of the program.
 
 Another less obvious use could be to help with instruction substitution. As mentioned in the \emph{Implementation} section, instead of using 32 bit \emph{mov} instructions when moving values smaller than \texttt{0xFF}, eight bit \emph{mov} instructions could be used instead. The problem with this approach was that if a larger value than \texttt{0xFF} already was in the register, the wrong value would reside in the register since the eight bit \emph{mov} only would affect the least significant part of the register. The emulator could be used to emulate all the instructions before a 32 bit \emph{mov} and look at the value in the register to determine if the instruction could be replaced with its eight bit equivalent.
 
 \chapter{Conclusion}
-While there are many obstacles in the way of successfully use instruction overlapping for code obfuscation it can still be used fairly well provided that tricks like adjusting for memory and being able to swap instructions are used. As for a tool, it is the author's opinion that it could work very well together with some modifications to the current tool aswell as the suggested features discussed in the \emph{Further development} part of the \emph{Discussion and further development} section.
+While there are many obstacles in the way of successfully use instruction overlapping for code obfuscation it can still be used fairly well provided that tricks like adjusting for memory and being able to swap instructions are used. As for a tool, it is the author's opinion that it could work very well together with some modifications to the current tool as well as the suggested features discussed in the \emph{Further development} part of the \emph{Discussion and further development} section.
 
 In conclusion, the main challenges when using instruction overlapping are instructions accessing memory, instructions that change the control flow of the program and that the MEP can synchronize with the HEP after an unsatisfactory amount of instructions. Fortunately all of these problems can be remedied in one way or another. By utilizing a smarter memory adjustment technique, perhaps using a memory adjustment section for each of the memory accessing instructions the problem of the MEP crashing can be avoided entirely. If instructions changing the control flow of the problem are found in the MEP, the emulator can be used to determine if they should be swapped or not. Lastly by using several MEPs, the program will be hidden and the problem of synchronization will be eliminated. 
 
