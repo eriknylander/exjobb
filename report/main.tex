@@ -367,9 +367,11 @@ While this approach ensures that the MEP does not crash, it is not very powerful
 \subsection{A more dynamic solution}
 A stronger way to achieve instruction overlapping is to iteratively insert bytes in front of the HEP. With a little luck this could make the code overlap and the MEP would end up looking a lot more natural since it would be made up of actual real instructions instead of just \emph{nop} instructions. The first example on instruction overlapping in this report was achieved using this approach. 
 
-The problems with this way of doing it are those that arise when using instruction overlapping in itself, namely to make the HEP and MEP runnable as well as obfuscating a whole program  without having the MEP synchronize with the HEP.
+The problems with this way of doing things are those that arise when using instruction overlapping in itself, namely to make the HEP and MEP runnable as well as obfuscating a whole program  without having the MEP synchronize with the HEP.
 
-To use this technique and deal with the problems that arise, a tool could be used. Such a tool would have to be able to iteratively insert bytes in front of the program that is to be ofuscated. It must then look at which inserted bytes makes the MEP synchronize with the HEP in the most instructions. When the best bytes have been chosen, the tool has to be able to deal with potential problems such as instructions that makes the MEP crash and so on.
+To use this technique and deal with the problems that arise, a tool could be used. Such a tool would have to be able to iteratively insert bytes in front of the program that is to be ofuscated. It must then look at which inserted bytes makes the MEP synchronize with the HEP in the most instructions. When the best bytes have been chosen, the tool has to be able to deal with potential problems such as instructions that makes the MEP crash and so on. 
+
+In short, the problems that a tool needs to be able to handle are when there are instructions accessing memory in the MEP or instructions that change the control flow of the program in the MEP. It also needs to be able to keep the MEP from synchronizing with the HEP.
 
 In the next chapter the implementation of such a tool will be described.
 
