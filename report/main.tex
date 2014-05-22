@@ -303,7 +303,7 @@ The other main challenge is that because of the variable instruction length in t
 \subsection{Instruction overlapping using NOP instructions} 
 One way of achieving instruction overlapping is by using \emph{nop} instructions\cite{instructionoverlapping}. The \emph{nop} instruction is interesting because while it can be encoded as \texttt{0x90} it can also be encoded using up to 15 bytes. Consider the following instruction and its encoding: 
 \begin{verbatim}
-    nop word ptr [eax+eax + 0x00000000]} ;66 0f 1f 84 00 00 00 00 00         
+    nop word ptr [eax+eax + 0x00000000]}; 66 0f 1f 84 00 00 00 00 00         
 \end{verbatim}
 
 \noindent Because the \emph{nop} instruction does not alter the state of the processor other than increasing the program counter, it will not access any memory even though it has a memory operand. What this means is that the last five bytes of the instruction can be chosen arbitrarily meaning that the nine byte \emph{nop} can be used for instruction overlapping. The reason for not using the 15 byte encoding is that the additional bytes are static and can not be assigned arbitrary values.
@@ -334,31 +334,44 @@ The idea is to hide the HEP instructions inside the \emph{nop} instructions. Thi
 An example of this approach will be presented below. Consider the following code:
 
 \begin{verbatim}
-    mov ax, 0x15                       ;66 b8 15 00
-    mov bx, 0x1                        ;66 bb 01 00
-    and eax, ebx                       ;21 d8
+    mov ax, 0x15                       ; 66 b8 15 00
+    mov bx, 0x1                        ; 66 bb 01 00
+    and eax, ebx                       ; 21 d8
 \end{verbatim}
 
 \noindent Using \emph{test} as the wrapping function, the MEP will look like this:
 
 \begin{verbatim}
-    nop word ptr [esi - 0x56ffea48]    ; 66 0f 1f 84 b8 15 00 a9
-    nop word ptr [esi - 0x56fffe45]    ; 66 0f 1f 84 bb 01 00 a9
-    nop word ptr [ecc - 0x6f6f6f28]    ; 66 0f 1f 84 21 d8 90 90
+    nop word ptr [esi - 0x56ffea48]    ; 66 0f 1f 84 66 b8 15 00 a9
+    nop word ptr [esi - 0x56fffe45]    ; 66 0f 1f 84 66 bb 01 00 a9
+    nop word ptr [ecc - 0x6f6f6f28]    ; 66 0f 1f 84 21 d8 90 90 90
 \end{verbatim}
 
 \noindent The HEP will then look like this: 
 
 \begin{verbatim}
     mov ax, 0x15                       ; 66 b8 15 00
-    test eax, 0x841f0f66               ; a9 66 1f 0f 66
+    test eax, 0x841f0f66               ; a9 66 1f 0f 84
     mov bx, 0x1                        ; 66 bb 01 00
-    test eax, 0x841f0f66               ; a9 66 1f 0f 66
+    test eax, 0x841f0f66               ; a9 66 1f 0f 84
     and eax, ebx                       ; 21 d8
     nop                                ; 90
     nop                                ; 90
     nop                                ; 90
 \end{verbatim}
+
+\noindent Note that the last three \emph{nop} instructions were added to stop the overlapping.
+
+While this approach ensures that the MEP does not crash, it is not very powerful since the longest instruction that can be hidden has the length of four bytes unless the last byte is suitable for a wrapping instruction in which case the length is five bytes. Other weaknesses are that the MEP code looks very suspicious containing only \emph{nop} instructions and that the HEP gains unecessary instructions.  
+
+\subsection{A more dynamic solution}
+A stronger way to achieve instruction overlapping is to iteratively insert bytes in front of the HEP. With a little luck this could make the code overlap and the MEP would end up looking a lot more natural since it would be made up of actual real instructions instead of just \emph{nop} instructions. The first example on instruction overlapping in this report was achieved using this approach. 
+
+The problems with this way of doing it are those that arise when using instruction overlapping in itself, namely to make the HEP and MEP runnable as well as obfuscating a whole program  without having the MEP synchronize with the HEP.
+
+To use this technique and deal with the problems that arise, a tool could be used. Such a tool would have to be able to iteratively insert bytes in front of the program that is to be ofuscated. It must then look at which inserted bytes makes the MEP synchronize with the HEP in the most instructions. When the best bytes have been chosen, the tool has to be able to deal with potential problems such as instructions that makes the MEP crash and so on.
+
+In the next chapter the implementation of such a tool will be described.
 
 \chapter{Implementation}
 \section{Programming Language}
@@ -1097,7 +1110,7 @@ This is an area in the tool that could be expanded which would contribute immens
 \subsection{Adding code to fool dynamic disassemblers}
 A very important feature when using instruction overlapping is being able to determine if the MEP or HEP is to be executed. Because the MEP is only supposed to be executed when the program is being analysed. Since this is often done using a dynamic disassembler in a virtual machine. Thankfully there are ways to determine if a program is run on a virtual machine and whether a debugger is attached.
 
-If code for detecting a debugger or if the program was run on a virtual machine was added to the program, the execution of the MEP could be made to depend on that fact. This could should of course be provided by the tool.
+If code for detecting a debugger or if the program was run on a virtual machine was added to the program, the execution of the MEP could be made to depend on that fact. This should of course be provided by the tool.
 
 \subsection{Taking advantage of the emulator}
 \texttt{libemu} was first considered for the tool because of its emulation capabilities, however the tool does not use the emulator at all. 
