@@ -685,7 +685,7 @@ The way the tool handles 32 bit \emph{mov} instructions is by replacing them wit
 To test the tool, two different test programs were written to be used as input for the tool. The two test programs are desribed below.
 
 \subsection{launchshell}
-The functionality of the \texttt{launchshell} program is to open a shell when the program is run. This is done by making a Linux system call called \texttt{sys\_execve} which will execute the program specified by the parameters passed to the system call. The entire program written in assembly language is presented and explained below:
+The functionality of the \texttt{launchshell} program is to open a shell when the program is run. This is done by making a Linux system call called \texttt{sys\_execve} which will execute the program specified by the parameters passed to the system call. Since this program could be extended so that that the shell is opened with root permissions it could potentially be used by a hacker as shell code to gain control over a local or remote host. This program was chosen as a test program because it is a good exempel of a program that could benefit from being obfuscated. If the program was to be disassembled by an analyser, he would not find the shell code. The entire program written in assembly language is presented and explained below:
 
 \begin{verbatim}
 BITS 32
@@ -732,7 +732,7 @@ Lastly the system call is invoked by the interrupt instruction.
 
 
 \subsection{writetofile}
-The next program is called \texttt{writetofile} and like the name suggests, it's functionality is to write data to a file. To do this, two different system calls are used, \texttt{sys\_open} and \texttt{sys\_write}. \texttt{sys\_open} will open a file (or create one provided that certain parameters are used) while \texttt{sys\_write} will write to an open file if permitted. The program is explained below:
+The next program is called \texttt{writetofile} and like the name suggests, it's functionality is to write data to a file. To do this, two different system calls are used, \texttt{sys\_open} and \texttt{sys\_write}. \texttt{sys\_open} will open a file (or create one provided that certain parameters are used) while \texttt{sys\_write} will write to an open file if permitted. To motivate the use of this program as a test program, consider the following: if a program uses similar code to write data to a file, it could benefit from being obfuscated in order to keep an adversary from knowing if and to what file the program writes its data. In term this would keep the adversary from being able to tamper with the data making the program behave in a way that was not intended. The program is explained below:
 
 \begin{verbatim}
 BITS 32
