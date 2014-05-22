@@ -344,7 +344,7 @@ An example of this approach will be presented below. Consider the following code
 \begin{verbatim}
     nop word ptr [esi - 0x56ffea48]    ; 66 0f 1f 84 66 b8 15 00 a9
     nop word ptr [esi - 0x56fffe45]    ; 66 0f 1f 84 66 bb 01 00 a9
-    nop word ptr [ecc - 0x6f6f6f28]    ; 66 0f 1f 84 21 d8 90 90 90
+    nop word ptr [ecx - 0x6f6f6f28]    ; 66 0f 1f 84 21 d8 90 90 90
 \end{verbatim}
 
 \noindent The HEP will then look like this: 
