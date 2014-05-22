@@ -301,7 +301,64 @@ Unfortunately this makes up one of the main challenges when using instruction ov
 The other main challenge is that because of the variable instruction length in the x86 architecture, the MEP tends to synchronize with the HEP after a number of instructions. This is a problem because once the MEP has synchronized with the HEP, the remaining instructions of the program are out in the open. 
 
 \subsection{Instruction overlapping using NOP instructions} 
+One way of achieving instruction overlapping is by using \emph{nop} instructions\cite{instructionoverlapping}. The \emph{nop} instruction is interesting because while it can be encoded as \texttt{0x90} it can also be encoded using up to 15 bytes. Consider the following instruction and its encoding: 
+\begin{verbatim}
+    nop word ptr [eax+eax + 0x00000000]} ;66 0f 1f 84 00 00 00 00 00         
+\end{verbatim}
 
+\noindent Because the \emph{nop} instruction does not alter the state of the processor other than increasing the program counter, it will not access any memory even though it has a memory operand. What this means is that the last five bytes of the instruction can be chosen arbitrarily meaning that the nine byte \emph{nop} can be used for instruction overlapping. The reason for not using the 15 byte encoding is that the additional bytes are static and can not be assigned arbitrary values.
+
+The idea is to hide the HEP instructions inside the \emph{nop} instructions. This ensures that the MEP is runnable but it raises the question of how to make the HEP able to run as well. By just embedding the HEP instructions inside \emph{nop} instructions, all that is achieved is non functioning \emph{instruction embedding}. What is needed is something to glue the HEP together and make it runnable. In \cite{instructionoverlapping} the proposed way of doing this is to use so called \emph{wrapping instructions}. The wrapping instruction will be placed between the instructions in the HEP to serve as a bridge between the \emph{nop} instructions in the MEP. This is best explained by considering the format of the MEP instructions to look like this: \texttt{XX YY ZZ} where \texttt{XX} are the prefix and opcode bytes, \texttt{YY} are the arbitrarily chosen bytes which makes up the HEP instruction and \texttt{ZZ} is preferably the last byte in the MEP instruction so that it together with \texttt{XX} make up the wrapping instruction. Then the MEP will look like this:
+
+\begin{verbatim}
+    XX YY ZZ  ; nop containing HEP instruction
+    XX YY ZZ  ; nop containing HEP instruction
+    XX YY ZZ  ; nop containing HEP instruction
+    ...
+\end{verbatim} 
+
+\noindent The HEP will then look like this:
+
+\begin{verbatim}
+    YY        ; HEP instruction
+    ZZ XX     ; Wrapping instruction
+    YY        ; HEP instruction
+    ZZ XX     ; Wrapping instruction
+    YY        ; HEP instruction
+    ZZ XX     ; Wrapping instruction
+    ...
+\end{verbatim}
+
+\noindent Ideally the wrapping instruction is one that does not affect the behaviour of the HEP such as \emph{test} or \emph{cmp}. 
+
+An example of this approach will be presented below. Consider the following code:
+
+\begin{verbatim}
+    mov ax, 0x15                       ;66 b8 15 00
+    mov bx, 0x1                        ;66 bb 01 00
+    and eax, ebx                       ;21 d8
+\end{verbatim}
+
+\noindent Using \emph{test} as the wrapping function, the MEP will look like this:
+
+\begin{verbatim}
+    nop word ptr [esi - 0x56ffea48]    ; 66 0f 1f 84 b8 15 00 a9
+    nop word ptr [esi - 0x56fffe45]    ; 66 0f 1f 84 bb 01 00 a9
+    nop word ptr [ecc - 0x6f6f6f28]    ; 66 0f 1f 84 21 d8 90 90
+\end{verbatim}
+
+\noindent The HEP will then look like this: 
+
+\begin{verbatim}
+    mov ax, 0x15                       ; 66 b8 15 00
+    test eax, 0x841f0f66               ; a9 66 1f 0f 66
+    mov bx, 0x1                        ; 66 bb 01 00
+    test eax, 0x841f0f66               ; a9 66 1f 0f 66
+    and eax, ebx                       ; 21 d8
+    nop                                ; 90
+    nop                                ; 90
+    nop                                ; 90
+\end{verbatim}
 
 \chapter{Implementation}
 \section{Programming Language}
