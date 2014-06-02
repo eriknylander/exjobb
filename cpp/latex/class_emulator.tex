@@ -1,0 +1,190 @@
+\section{\-Emulator \-Class \-Reference}
+\label{class_emulator}\index{\-Emulator@{\-Emulator}}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bf \-Emulator} ()
+\item 
+{\bf $\sim$\-Emulator} ()
+\item 
+void {\bf load\-Program\-In\-Memory} (std\-::vector$<$ unsigned char $>$ instruction\-Bytes)
+\item 
+std\-::vector$<$ {\bf \-Instruction} $>$ {\bf get\-Instruction\-Vector} ()
+\item 
+bool {\bf get\-Instruction} (std\-::vector$<$ unsigned char $>$ ins\-Bytes, {\bf \-Instruction} \&ret)
+\item 
+int {\bf run\-And\-Get\-E\-Flags} ()
+\item 
+void {\bf do\-Preface} (std\-::vector$<$ unsigned char $>$ program, std\-::vector$<$ {\bf \-Instruction} $>$ \&preface, std\-::vector$<$ {\bf \-Instruction} $>$ \&hep)
+\item 
+void {\bf replace\-L\-E\-A} ({\bf \-Instruction} ins, std\-::vector$<$ {\bf \-Instruction} $>$ \&preface, std\-::vector$<$ {\bf \-Instruction} $>$ \&hep)
+\item 
+void {\bf print\-Debug} ()
+\item 
+void {\bf adjust\-For\-Memory\-Access} (std\-::vector$<$ {\bf \-Instruction} $>$ \&memory\-Adjustment, std\-::vector$<$ {\bf \-Instruction} $>$ \&mep)
+\item 
+std\-::vector$<$ {\bf \-Instruction} $>$ {\bf optimize\-Hep} (std\-::vector$<$ {\bf \-Instruction} $>$ hep)
+\item 
+std\-::vector$<$ {\bf \-Instruction} $>$ {\bf substitute\-Mov} ({\bf \-Instruction} \&a)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\index{\-Emulator@{\-Emulator}!\-Emulator@{\-Emulator}}
+\index{\-Emulator@{\-Emulator}!Emulator@{\-Emulator}}
+\subsubsection[{\-Emulator}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Emulator\-::\-Emulator} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_emulator_ad0ddfc7c60f5cfbbe377154e25cb6cfc}
+\-Creates an \doxyref{\-Emulator}{p.}{class_emulator} \index{\-Emulator@{\-Emulator}!$\sim$\-Emulator@{$\sim$\-Emulator}}
+\index{$\sim$\-Emulator@{$\sim$\-Emulator}!Emulator@{\-Emulator}}
+\subsubsection[{$\sim$\-Emulator}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Emulator\-::$\sim$\-Emulator} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a57bf3e602724d4ac35ca45e9ddc0c9aa}
+\doxyref{\-Emulator}{p.}{class_emulator} destructor 
+
+\subsection{\-Member \-Function \-Documentation}
+\index{\-Emulator@{\-Emulator}!adjust\-For\-Memory\-Access@{adjust\-For\-Memory\-Access}}
+\index{adjust\-For\-Memory\-Access@{adjust\-For\-Memory\-Access}!Emulator@{\-Emulator}}
+\subsubsection[{adjust\-For\-Memory\-Access}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Emulator\-::adjust\-For\-Memory\-Access} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{memory\-Adjustment, }
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{mep}
+\end{DoxyParamCaption}
+)}\label{class_emulator_aef83c8de8b05caa07e2d266e83f0d5d2}
+\-Memory adjustment to make the \-M\-E\-P able to run without crashing 
+\begin{DoxyParams}{\-Parameters}
+{\em memory\-Adjustment} & the vector to store the memory adjustment part in \\
+\hline
+{\em mep} & the \-M\-E\-P \\
+\hline
+\end{DoxyParams}
+\index{\-Emulator@{\-Emulator}!do\-Preface@{do\-Preface}}
+\index{do\-Preface@{do\-Preface}!Emulator@{\-Emulator}}
+\subsubsection[{do\-Preface}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Emulator\-::do\-Preface} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ unsigned char $>$}]{program, }
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{preface, }
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{hep}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a56a5505d2e53b35759f1e781e9d0f1cf}
+\-Performs the preface and substitutes 32 bit \-L\-E\-A instructions 
+\begin{DoxyParams}{\-Parameters}
+{\em program} & the vector containing the program \\
+\hline
+{\em preface} & a vector of \doxyref{\-Instruction}{p.}{class_instruction} objects to store the result of the preface in \\
+\hline
+{\em hep} & a vector to store the \-H\-E\-P in \\
+\hline
+\end{DoxyParams}
+\index{\-Emulator@{\-Emulator}!get\-Instruction@{get\-Instruction}}
+\index{get\-Instruction@{get\-Instruction}!Emulator@{\-Emulator}}
+\subsubsection[{get\-Instruction}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-Emulator\-::get\-Instruction} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ unsigned char $>$}]{ins\-Bytes, }
+\item[{{\bf \-Instruction} \&}]{ret}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a2c32362292de814f6baa39690b8b8f96}
+\-Parses a vector of bytes to form an \doxyref{\-Instruction}{p.}{class_instruction} object. 
+\begin{DoxyParams}{\-Parameters}
+{\em ins\-Bytes} & the bytes to parse \\
+\hline
+{\em ret} & the \doxyref{\-Instruction}{p.}{class_instruction} object to store the result in \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+true if the bytes make up a valid instruction 
+\end{DoxyReturn}
+\index{\-Emulator@{\-Emulator}!get\-Instruction\-Vector@{get\-Instruction\-Vector}}
+\index{get\-Instruction\-Vector@{get\-Instruction\-Vector}!Emulator@{\-Emulator}}
+\subsubsection[{get\-Instruction\-Vector}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ {\bf \-Instruction} $>$ {\bf \-Emulator\-::get\-Instruction\-Vector} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_emulator_ab18a61c99cc7f645e88fcb7d86d4060e}
+\-Parses the bytes in the memory of the \doxyref{\-Emulator}{p.}{class_emulator} and places them in \doxyref{\-Instruction}{p.}{class_instruction} objects \begin{DoxyReturn}{\-Returns}
+vector of \doxyref{\-Instruction}{p.}{class_instruction} objects 
+\end{DoxyReturn}
+\index{\-Emulator@{\-Emulator}!load\-Program\-In\-Memory@{load\-Program\-In\-Memory}}
+\index{load\-Program\-In\-Memory@{load\-Program\-In\-Memory}!Emulator@{\-Emulator}}
+\subsubsection[{load\-Program\-In\-Memory}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Emulator\-::load\-Program\-In\-Memory} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ unsigned char $>$}]{instruction\-Bytes}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a9d66051e4e0a43437a3fbdbeb0f7e661}
+\-Loads a vector of bytes in the memory of the emulator 
+\begin{DoxyParams}{\-Parameters}
+{\em instruction\-Bytes} & the vector of bytes to load in memory \\
+\hline
+\end{DoxyParams}
+\index{\-Emulator@{\-Emulator}!optimize\-Hep@{optimize\-Hep}}
+\index{optimize\-Hep@{optimize\-Hep}!Emulator@{\-Emulator}}
+\subsubsection[{optimize\-Hep}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ {\bf \-Instruction} $>$ {\bf \-Emulator\-::optimize\-Hep} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$}]{hep}
+\end{DoxyParamCaption}
+)}\label{class_emulator_ab184386740a4dbc148f7ed87cb56700c}
+\-Optimizes the \-H\-E\-P by replacing 32 bit \-M\-O\-V instructions. 
+\begin{DoxyParams}{\-Parameters}
+{\em the} & \-H\-E\-P \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+the new optimized \-H\-E\-P 
+\end{DoxyReturn}
+\index{\-Emulator@{\-Emulator}!print\-Debug@{print\-Debug}}
+\index{print\-Debug@{print\-Debug}!Emulator@{\-Emulator}}
+\subsubsection[{print\-Debug}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Emulator\-::print\-Debug} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a666ed69f43f197042fc184d29fb1f227}
+\-Prints a debug message with register and memory information \index{\-Emulator@{\-Emulator}!replace\-L\-E\-A@{replace\-L\-E\-A}}
+\index{replace\-L\-E\-A@{replace\-L\-E\-A}!Emulator@{\-Emulator}}
+\subsubsection[{replace\-L\-E\-A}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Emulator\-::replace\-L\-E\-A} (
+\begin{DoxyParamCaption}
+\item[{{\bf \-Instruction}}]{ins, }
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{preface, }
+\item[{std\-::vector$<$ {\bf \-Instruction} $>$ \&}]{hep}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a21cfd118c7e1b033dd485e5590837eb1}
+\-Replaces 32 bit \-L\-E\-A instructions by placing the \-L\-E\-A in the preface and an add instruction in the \-H\-E\-P 
+\begin{DoxyParams}{\-Parameters}
+{\em ins} & \-The \doxyref{\-Instruction}{p.}{class_instruction} object containing the \-L\-E\-A instruction \\
+\hline
+{\em preface} & the vector to store the preface part of the substitution in \\
+\hline
+{\em hep} & the vector to store the \-H\-E\-P part in \\
+\hline
+\end{DoxyParams}
+\index{\-Emulator@{\-Emulator}!run\-And\-Get\-E\-Flags@{run\-And\-Get\-E\-Flags}}
+\index{run\-And\-Get\-E\-Flags@{run\-And\-Get\-E\-Flags}!Emulator@{\-Emulator}}
+\subsubsection[{run\-And\-Get\-E\-Flags}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf \-Emulator\-::run\-And\-Get\-E\-Flags} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_emulator_a43707054f03e2044b9198c7d9aa8316b}
+\-Emulates the instructions in the memory of the \doxyref{\-Emulator}{p.}{class_emulator} and returns the value of the \-E\-F\-L\-A\-G\-S register \index{\-Emulator@{\-Emulator}!substitute\-Mov@{substitute\-Mov}}
+\index{substitute\-Mov@{substitute\-Mov}!Emulator@{\-Emulator}}
+\subsubsection[{substitute\-Mov}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ {\bf \-Instruction} $>$ {\bf \-Emulator\-::substitute\-Mov} (
+\begin{DoxyParamCaption}
+\item[{{\bf \-Instruction} \&}]{a}
+\end{DoxyParamCaption}
+)}\label{class_emulator_ac1a42259cfcd8c85c496a17460c45fb7}
+\-Substitutes a 32 bit \-M\-O\-V instruction 
+\begin{DoxyParams}{\-Parameters}
+{\em a} & \-The instruction to substitute \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+vector of \doxyref{\-Instruction}{p.}{class_instruction} objects that makes up the substitution 
+\end{DoxyReturn}
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+emulator.\-h\item 
+emulator.\-cpp\end{DoxyCompactItemize}

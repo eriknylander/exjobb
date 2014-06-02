@@ -1,0 +1,116 @@
+\section{\-Parser \-Class \-Reference}
+\label{class_parser}\index{\-Parser@{\-Parser}}
+\subsection*{\-Public \-Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef unsigned char {\bfseries \-B\-Y\-T\-E}\label{class_parser_a57c1588f2c5175fbc7739f674762249b}
+
+\end{DoxyCompactItemize}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\-::vector$<$ \-B\-Y\-T\-E $>$ {\bf parse\-File} (char file\-Name[$\,$], int number\-Of\-Instructions)
+\item 
+int {\bf parse\-Until\-Invalid} (std\-::vector$<$ \-B\-Y\-T\-E $>$ buffer)
+\item 
+void {\bf parse\-And\-Print\-Preface} (std\-::vector$<$ \-B\-Y\-T\-E $>$ preface)
+\item 
+void {\bf parse\-And\-Print\-Memory\-Adjustment} (std\-::vector$<$ \-B\-Y\-T\-E $>$ memory\-Adjustment)
+\item 
+void {\bf parse\-And\-Print\-Program} (std\-::vector$<$ \-B\-Y\-T\-E $>$ mep, int starting\-Opcode\-Size, int index)
+\item 
+void {\bf print\-Program\-Return} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\index{\-Parser@{\-Parser}!parse\-And\-Print\-Memory\-Adjustment@{parse\-And\-Print\-Memory\-Adjustment}}
+\index{parse\-And\-Print\-Memory\-Adjustment@{parse\-And\-Print\-Memory\-Adjustment}!Parser@{\-Parser}}
+\subsubsection[{parse\-And\-Print\-Memory\-Adjustment}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Parser\-::parse\-And\-Print\-Memory\-Adjustment} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ \-B\-Y\-T\-E $>$}]{memory\-Adjustment}
+\end{DoxyParamCaption}
+)}\label{class_parser_a28971446aebc3dfc0e18c90b7b7b66f9}
+\-Disassembles a vector of bytes and prints the instructions in assembly language 
+\begin{DoxyParams}{\-Parameters}
+{\em memory\-Adjustment} & the vector containing the bytes in the memory adjustment part \\
+\hline
+\end{DoxyParams}
+\index{\-Parser@{\-Parser}!parse\-And\-Print\-Preface@{parse\-And\-Print\-Preface}}
+\index{parse\-And\-Print\-Preface@{parse\-And\-Print\-Preface}!Parser@{\-Parser}}
+\subsubsection[{parse\-And\-Print\-Preface}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Parser\-::parse\-And\-Print\-Preface} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ \-B\-Y\-T\-E $>$}]{preface}
+\end{DoxyParamCaption}
+)}\label{class_parser_aef2b5e74bc460527cb7f012fdc99a6c9}
+\-Disassembles a vector of bytes and prints the instructions in assembly language 
+\begin{DoxyParams}{\-Parameters}
+{\em preface} & the vector containing the bytes in the preface \\
+\hline
+\end{DoxyParams}
+\index{\-Parser@{\-Parser}!parse\-And\-Print\-Program@{parse\-And\-Print\-Program}}
+\index{parse\-And\-Print\-Program@{parse\-And\-Print\-Program}!Parser@{\-Parser}}
+\subsubsection[{parse\-And\-Print\-Program}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Parser\-::parse\-And\-Print\-Program} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ \-B\-Y\-T\-E $>$}]{mep, }
+\item[{int}]{starting\-Opcode\-Size, }
+\item[{int}]{index}
+\end{DoxyParamCaption}
+)}\label{class_parser_aaf7143f9e3b7a263226874893f320aa7}
+\-Disassembles a vector of bytes and prints the instructions in assembly language 
+\begin{DoxyParams}{\-Parameters}
+{\em mep} & the vector containing the bytes in the program \\
+\hline
+{\em starting\-Opcode\-Size} & the number of starting bytes \\
+\hline
+{\em index} & an index for the mep \\
+\hline
+\end{DoxyParams}
+\index{\-Parser@{\-Parser}!parse\-File@{parse\-File}}
+\index{parse\-File@{parse\-File}!Parser@{\-Parser}}
+\subsubsection[{parse\-File}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ unsigned char $>$ {\bf \-Parser\-::parse\-File} (
+\begin{DoxyParamCaption}
+\item[{char}]{file\-Name[$\,$], }
+\item[{int}]{number\-Of\-Instructions}
+\end{DoxyParamCaption}
+)}\label{class_parser_a31627ae0600e348347f3d728d5451801}
+\-Reads an input file using \-Udis86 and places the bytes in a vector
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em file\-Name} & the path of the input file \\
+\hline
+{\em number\-Of\-Instructions} & the number of instructions to read from the input file \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+a vector containing the bytes making up the input file 
+\end{DoxyReturn}
+\index{\-Parser@{\-Parser}!parse\-Until\-Invalid@{parse\-Until\-Invalid}}
+\index{parse\-Until\-Invalid@{parse\-Until\-Invalid}!Parser@{\-Parser}}
+\subsubsection[{parse\-Until\-Invalid}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf \-Parser\-::parse\-Until\-Invalid} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ \-B\-Y\-T\-E $>$}]{buffer}
+\end{DoxyParamCaption}
+)}\label{class_parser_a943d33ee0f42a9f4caaa2367de7aba4a}
+\-Disassembles a vector of bytes and returns the number of valid instructions 
+\begin{DoxyParams}{\-Parameters}
+{\em buffer} & the vector containing the bytes \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+the number of valid instructions 
+\end{DoxyReturn}
+\index{\-Parser@{\-Parser}!print\-Program\-Return@{print\-Program\-Return}}
+\index{print\-Program\-Return@{print\-Program\-Return}!Parser@{\-Parser}}
+\subsubsection[{print\-Program\-Return}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Parser\-::print\-Program\-Return} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_parser_a87669c171734e668089152b9207cec79}
+\-Prints a return statement in assembly language 
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+parser.\-h\item 
+parser.\-cpp\end{DoxyCompactItemize}

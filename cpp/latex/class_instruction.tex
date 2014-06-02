@@ -1,0 +1,130 @@
+\section{\-Instruction \-Class \-Reference}
+\label{class_instruction}\index{\-Instruction@{\-Instruction}}
+\subsection*{\-Public \-Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef unsigned char {\bfseries \-B\-Y\-T\-E}\label{class_instruction_aefa6d552997071569535587dd040b9c5}
+
+\end{DoxyCompactItemize}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bf \-Instruction} (struct emu\-\_\-instruction input, struct emu\-\_\-cpu\-\_\-instruction\-\_\-info info, bool legal\-Instruction, std\-::vector$<$ \-B\-Y\-T\-E $>$ bytes)
+\item 
+{\bf \-Instruction} ()
+\item 
+struct emu\-\_\-instruction {\bf get\-Instruction} ()
+\item 
+struct emu\-\_\-cpu\-\_\-instruction\-\_\-info {\bf get\-Instruction\-Info} ()
+\item 
+bool {\bf is\-Legal} ()
+\item 
+int {\bfseries get\-Start\-Index} ()\label{class_instruction_a13e9b5c6a49d9f65f8f0f9f2e6fe14e7}
+
+\item 
+int {\bfseries get\-End\-Index} ()\label{class_instruction_a11fd3c42225453a53f0f19e99e5cb98f}
+
+\item 
+std\-::vector$<$ \-B\-Y\-T\-E $>$ {\bf get\-Bytes} ()
+\item 
+void {\bf print\-Instruction} ()
+\item 
+std\-::string {\bf get\-Byte\-String} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\index{\-Instruction@{\-Instruction}!\-Instruction@{\-Instruction}}
+\index{\-Instruction@{\-Instruction}!Instruction@{\-Instruction}}
+\subsubsection[{\-Instruction}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Instruction\-::\-Instruction} (
+\begin{DoxyParamCaption}
+\item[{struct emu\-\_\-instruction}]{ins, }
+\item[{struct emu\-\_\-cpu\-\_\-instruction\-\_\-info}]{info, }
+\item[{bool}]{legal\-Instruction, }
+\item[{std\-::vector$<$ \-B\-Y\-T\-E $>$}]{bytes}
+\end{DoxyParamCaption}
+)}\label{class_instruction_a9f4b75338708a369506fdf6c4148ca49}
+\-Constructs an \doxyref{\-Instruction}{p.}{class_instruction} object 
+\begin{DoxyParams}{\-Parameters}
+{\em ins} & struct containing characteristics of the instruction, gathered using libemu \\
+\hline
+{\em info} & struct containing other characteristics of the instruction, gathered using libemu \\
+\hline
+{\em legal\-Instruction} & shows if the instruction can be in the \-M\-E\-P without crashing it \\
+\hline
+{\em bytes} & the bytes making up the instruction \\
+\hline
+\end{DoxyParams}
+\index{\-Instruction@{\-Instruction}!\-Instruction@{\-Instruction}}
+\index{\-Instruction@{\-Instruction}!Instruction@{\-Instruction}}
+\subsubsection[{\-Instruction}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Instruction\-::\-Instruction} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_instruction_aebd15229c1651af49dcb203707e7a2d5}
+\-Constructs an empty \doxyref{\-Instruction}{p.}{class_instruction} object 
+
+\subsection{\-Member \-Function \-Documentation}
+\index{\-Instruction@{\-Instruction}!get\-Bytes@{get\-Bytes}}
+\index{get\-Bytes@{get\-Bytes}!Instruction@{\-Instruction}}
+\subsubsection[{get\-Bytes}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$ \-B\-Y\-T\-E $>$ {\bf \-Instruction\-::get\-Bytes} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_instruction_a11ba9e509daa35f333bfe89cf2ff0560}
+\-Returns the bytes making up the instruction \begin{DoxyReturn}{\-Returns}
+the bytes making up the instruction 
+\end{DoxyReturn}
+\index{\-Instruction@{\-Instruction}!get\-Byte\-String@{get\-Byte\-String}}
+\index{get\-Byte\-String@{get\-Byte\-String}!Instruction@{\-Instruction}}
+\subsubsection[{get\-Byte\-String}]{\setlength{\rightskip}{0pt plus 5cm}std\-::string {\bf \-Instruction\-::get\-Byte\-String} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_instruction_a4b5f7e02eeed98fa47b0b8e833eec5c8}
+\-Returns the instruction as a string in hexadecimal form \begin{DoxyReturn}{\-Returns}
+the string to return 
+\end{DoxyReturn}
+\index{\-Instruction@{\-Instruction}!get\-Instruction@{get\-Instruction}}
+\index{get\-Instruction@{get\-Instruction}!Instruction@{\-Instruction}}
+\subsubsection[{get\-Instruction}]{\setlength{\rightskip}{0pt plus 5cm}struct emu\-\_\-instruction {\bf \-Instruction\-::get\-Instruction} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  [read]}}\label{class_instruction_a4e3286c220aab2dd92a13c3923c0dea3}
+\-Returns the emu\-\_\-instruction struct of the \doxyref{\-Instruction}{p.}{class_instruction} object \begin{DoxyReturn}{\-Returns}
+the emu\-\_\-instruction struct 
+\end{DoxyReturn}
+\index{\-Instruction@{\-Instruction}!get\-Instruction\-Info@{get\-Instruction\-Info}}
+\index{get\-Instruction\-Info@{get\-Instruction\-Info}!Instruction@{\-Instruction}}
+\subsubsection[{get\-Instruction\-Info}]{\setlength{\rightskip}{0pt plus 5cm}struct emu\-\_\-cpu\-\_\-instruction\-\_\-info {\bf \-Instruction\-::get\-Instruction\-Info} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  [read]}}\label{class_instruction_ad27a25c2398ad47a6896af0caa9a5c2f}
+\-Returns the emu\-\_\-cpu\-\_\-instruction\-\_\-info struct of the \doxyref{\-Instruction}{p.}{class_instruction} object \begin{DoxyReturn}{\-Returns}
+the emu\-\_\-cpu\-\_\-instruction\-\_\-info struct 
+\end{DoxyReturn}
+\index{\-Instruction@{\-Instruction}!is\-Legal@{is\-Legal}}
+\index{is\-Legal@{is\-Legal}!Instruction@{\-Instruction}}
+\subsubsection[{is\-Legal}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-Instruction\-::is\-Legal} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_instruction_aef402fc5de85f93222fa543e5f9a2e29}
+\-Return the legal\-Instruction value \begin{DoxyReturn}{\-Returns}
+the legal\-Instruction value 
+\end{DoxyReturn}
+\index{\-Instruction@{\-Instruction}!print\-Instruction@{print\-Instruction}}
+\index{print\-Instruction@{print\-Instruction}!Instruction@{\-Instruction}}
+\subsubsection[{print\-Instruction}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Instruction\-::print\-Instruction} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{class_instruction_a8ac6c9b85adb3b5fca629760a8b4d285}
+\-Prints the instruction in hexadecimal form 
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+instruction.\-h\item 
+instruction.\-cpp\end{DoxyCompactItemize}
